@@ -1,0 +1,34 @@
+/**
+ * Example SysConfig file for an MSPM0G3507 UART echo reference.
+ * Adapt device, package, SDK product, UART instance, pins, and names to the real project.
+ *
+ * @cliArgs --device "MSPM0G350X" --part "Default" --package "LQFP-64(PM)" --product "mspm0_sdk@2.05.01.01"
+ * @v2CliArgs --device "MSPM0G3507" --package "LQFP-64(PM)" --product "mspm0_sdk@2.05.01.01"
+ * @versions {"tool":"1.24.0+4110"}
+ */
+
+const SYSCTL = scripting.addModule("/ti/driverlib/SYSCTL");
+const UART = scripting.addModule("/ti/driverlib/UART", {}, false);
+const UART1 = UART.addInstance();
+const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
+
+const gate7 = system.clockTree["MFCLKGATE"];
+gate7.enable = true;
+
+UART1.$name                    = "UART_0";
+UART1.enabledInterrupts        = ["RX"];
+UART1.targetBaudRate           = 115200;
+UART1.uartClkSrc               = "MFCLK";
+UART1.peripheral.$assign       = "UART0";
+UART1.peripheral.rxPin.$assign = "PA11";
+UART1.peripheral.txPin.$assign = "PA10";
+UART1.txPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric0";
+UART1.rxPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric1";
+
+SYSCTL.forceDefaultClkConfig = true;
+SYSCTL.clockTreeEn           = true;
+
+Board.peripheral.$suggestSolution          = "DEBUGSS";
+Board.peripheral.swclkPin.$suggestSolution = "PA20";
+Board.peripheral.swdioPin.$suggestSolution = "PA19";
+
