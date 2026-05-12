@@ -71,14 +71,26 @@ docs/
   ccs_project_rules.md
   driverlib_rules.md
   common_mistakes.md
+snippets/
+  gpio_output_led.syscfg.md
+  gpio_input_key_interrupt.syscfg.md
+  uart_115200.syscfg.md
+  pwm_motor.syscfg.md
+  i2c_oled.syscfg.md
+  adc_sampling.syscfg.md
+  timer_interrupt.syscfg.md
+examples/
+  led_blink/
+  uart_echo/
+  pwm_motor/
 ```
 
-当前阶段以文档和规则为主，不需要连接 MSPM0 硬件。
+当前阶段以规则、`.syscfg` 片段和最小参考例程为主，不需要连接 MSPM0 硬件。
+
+`examples/` 目录不是完整 CCS 导入工程，而是给 Agent 和用户参考的最小结构：`README.md`、`main.c` 和 `example.syscfg`。
 
 ## 后续计划
 
-- 常见 `.syscfg` 片段
-- 点灯、串口、PWM 等最小例程
 - `.syscfg` 静态检查工具
 - SysConfig CLI / CCS 构建验证工具
 - 自动烧录流程
@@ -91,4 +103,3 @@ docs/
 - TI MSPM0 SDK: https://www.ti.com/tool/MSPM0-SDK
 - TI MSPM0 SysConfig Guide: https://software-dl.ti.com/msp430/esd/MSPM0-SDK/2_05_01_00/docs/english/tools/sysconfig_guide/doc_guide/doc_guide-srcs/sysconfig_guide.html
 - 立创天猛星 MSPM0G3507 文档: https://wiki.lckfb.com/zh-hans/tmx-mspm0g3507/
-
