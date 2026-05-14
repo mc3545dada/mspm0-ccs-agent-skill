@@ -1,4 +1,4 @@
-# Reference Projects Used For Validation
+﻿# Reference Projects Used For Validation
 
 This repository avoids using unverified contest code as a source of rules. Current references are limited to TI-generated empty CCS projects, the LCKFB Tianmengxing documentation pattern, and workflows verified on real hardware.
 

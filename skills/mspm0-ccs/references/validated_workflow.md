@@ -1,4 +1,4 @@
-# Validated Workflow: Tianmengxing PB22 LED
+﻿# Validated Workflow: Tianmengxing PB22 LED
 
 This document records a real hardware validation of the project rules on a LCKFB Tianmengxing MSPM0G3507 board.
 
@@ -105,7 +105,7 @@ delay_cycles(80000000);
 
 After a proper reset, the LED blinked at about one second. Without a system reset after flashing, the first run could blink at about 2.5 seconds, matching 80,000,000 cycles at roughly 32 MHz. Pressing the board reset button, or flashing with DSLite `-r 2 -u`, made the first run use the expected 80 MHz timing.
 
-See `docs/clock_tree_rules.md` for the validated clock-tree pattern.
+See `references/clock_tree_rules.md` for the validated clock-tree pattern.
 
 ## Commands Used
 

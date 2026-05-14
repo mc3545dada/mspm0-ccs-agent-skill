@@ -1,4 +1,4 @@
-# MSPM0 Clock Tree Rules
+﻿# MSPM0 Clock Tree Rules
 
 This document records the clock-tree behavior verified on the LCKFB Tianmengxing MSPM0G3507 board.
 

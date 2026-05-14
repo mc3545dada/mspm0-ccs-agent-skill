@@ -1,5 +1,5 @@
----
-name: mspm0-ccs-agent-skill
+﻿---
+name: mspm0-ccs
 description: Tool-neutral CLI agent rules for TI MSPM0 development with Code Composer Studio, CCS Theia, SysConfig, and DriverLib. Use when an agent needs to inspect or modify MSPM0 CCS projects, edit .syscfg configuration, avoid generated SysConfig files, use DriverLib APIs, validate SysConfig output, or work on NUEDC-style MSPM0 embedded firmware.
 ---
 
@@ -14,7 +14,7 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 1. Locate the project `.syscfg` file.
 2. Read the `.syscfg` metadata: device, package, SDK product, and SysConfig tool version.
 3. Inspect generated `ti_msp_dl_config.h` for generated names, macros, IRQ names, and init function spelling.
-4. Read the relevant docs under `docs/` before changing hardware configuration.
+4. Read the relevant docs under `references/` before changing hardware configuration.
 5. Make hardware configuration changes in `.syscfg`, not generated files.
 6. Rebuild or run SysConfig CLI after `.syscfg` changes.
 
@@ -28,20 +28,20 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 
 ## Read These References
 
-- Use `docs/syscfg_rules.md` for safe `.syscfg` edits.
-- Use `docs/ccs_project_rules.md` for CCS project layout and generated files.
-- Use `docs/driverlib_rules.md` for DriverLib initialization, ISR, and API rules.
-- Use `docs/common_mistakes.md` before finalizing changes.
-- Use `docs/validated_workflow.md` for the verified Tianmengxing MSPM0G3507 PB22 LED workflow.
-- Use `docs/cli_validation.md` for the SysConfig CLI -> gmake -> DSLite/J-Link command chain.
-- Use `docs/clock_tree_rules.md` before changing CPUCLK, SYSPLL, HFXT, MFCLK, UART clocks, or delay-cycle assumptions.
-- Use `docs/uart_blocking_tx.md` for the verified UART0 blocking transmit smoke test before moving to DMA or variable-length receive.
+- Use `references/syscfg_rules.md` for safe `.syscfg` edits.
+- Use `references/ccs_project_rules.md` for CCS project layout and generated files.
+- Use `references/driverlib_rules.md` for DriverLib initialization, ISR, and API rules.
+- Use `references/common_mistakes.md` before finalizing changes.
+- Use `references/validated_workflow.md` for the verified Tianmengxing MSPM0G3507 PB22 LED workflow.
+- Use `references/cli_validation.md` for the SysConfig CLI -> gmake -> DSLite/J-Link command chain.
+- Use `references/clock_tree_rules.md` before changing CPUCLK, SYSPLL, HFXT, MFCLK, UART clocks, or delay-cycle assumptions.
+- Use `references/uart_blocking_tx.md` for the verified UART0 blocking transmit smoke test before moving to DMA or variable-length receive.
 
 ## Tools
 
-Run `python tools/check_syscfg.py <project-dir>` when this repository is available and you need a quick static check of a CCS project. The tool checks `.syscfg` metadata, generated SysConfig files, assigned pins, init-function spelling, and prints validation command hints when it can infer them from the project.
+Run `python scripts/check_syscfg.py <project-dir>` when this skill is available and you need a quick static check of a CCS project. The tool checks `.syscfg` metadata, generated SysConfig files, assigned pins, init-function spelling, and prints validation command hints when it can infer them from the project.
 
-Run `python tools/serial_console.py --list` to list PC serial ports. For the verified CH340 setup, use `python tools/serial_console.py -p COM6 -b 115200 --timestamp --duration 10` after closing other serial tools such as VOFA+.
+Run `python scripts/serial_console.py --list` to list PC serial ports. For the verified CH340 setup, use `python scripts/serial_console.py -p COM6 -b 115200 --timestamp --duration 10` after closing other serial tools such as VOFA+.
 
 ## Expected Validation
 

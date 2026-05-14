@@ -1,4 +1,4 @@
-# CLI Validation for MSPM0 CCS Projects
+﻿# CLI Validation for MSPM0 CCS Projects
 
 This document records the command-line chain verified on a LCKFB Tianmengxing MSPM0G3507 board with CCS / CCS Theia, MSPM0 SDK 2.10.00.04, SysConfig 1.26.2, TI Arm Clang 4.0.3 LTS, and J-Link through UniFlash / DSLite.
 
@@ -9,7 +9,7 @@ The exact paths are environment-specific. Treat these commands as a pattern and 
 Run the repository checker first:
 
 ```powershell
-python tools\check_syscfg.py C:\Users\3545\workspace_ccstheia\26testproject1
+python scripts\check_syscfg.py C:\Users\3545\workspace_ccstheia\26testproject1
 ```
 
 The checker looks for:

@@ -1,4 +1,4 @@
-# Tianmengxing 80 MHz CPUCLK + MFCLK SysConfig Snippet
+﻿# Tianmengxing 80 MHz CPUCLK + MFCLK SysConfig Snippet
 
 ## Use Case
 

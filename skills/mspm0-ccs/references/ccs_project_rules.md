@@ -1,4 +1,4 @@
-# CCS Project Rules for MSPM0
+﻿# CCS Project Rules for MSPM0
 
 MSPM0 projects created from TI examples often use Code Composer Studio or CCS Theia. They may look like ordinary C projects, but SysConfig and generated build files are part of the workflow.
 

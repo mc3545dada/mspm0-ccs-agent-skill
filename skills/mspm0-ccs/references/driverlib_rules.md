@@ -1,4 +1,4 @@
-# MSPM0 DriverLib Rules
+﻿# MSPM0 DriverLib Rules
 
 MSPM0 CCS projects commonly use TI DriverLib with SysConfig-generated setup code. Agents should preserve that model.
 

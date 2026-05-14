@@ -1,4 +1,4 @@
-# UART0 Blocking TX SysConfig Snippet
+﻿# UART0 Blocking TX SysConfig Snippet
 
 ## Use Case
 

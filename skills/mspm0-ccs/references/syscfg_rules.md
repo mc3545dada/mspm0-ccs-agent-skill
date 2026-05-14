@@ -1,4 +1,4 @@
-# SysConfig Rules for MSPM0
+﻿# SysConfig Rules for MSPM0
 
 `.syscfg` is the editable SysConfig source file for many MSPM0 CCS projects. It is a text-based configuration script that describes devices, packages, pins, peripherals, clocks, and generated initialization output.
 

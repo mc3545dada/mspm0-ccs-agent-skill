@@ -1,4 +1,4 @@
-# UART Blocking TX Baseline
+﻿# UART Blocking TX Baseline
 
 This document records the first verified UART smoke test on the LCKFB Tianmengxing MSPM0G3507 board.
 
@@ -15,7 +15,7 @@ It is intentionally simple: blocking UART string transmit plus PB22 LED blink. I
 - Data format: 8 data bits, no parity, 1 stop bit
 - PC adapter observed: CH340 on COM6
 - PC tool observed: VOFA+ raw data view
-- Python tool observed: `tools/serial_console.py`
+- Python tool observed: `scripts/serial_console.py`
 
 Current generated output showed:
 
@@ -54,7 +54,7 @@ UART1.rxPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric1";
 UART1.peripheral.$suggestSolution = "UART0";
 ```
 
-Keep the 80 MHz / clock-tree setup from `docs/clock_tree_rules.md` when reproducing this exact test.
+Keep the 80 MHz / clock-tree setup from `references/clock_tree_rules.md` when reproducing this exact test.
 
 ## C Pattern
 
@@ -105,8 +105,8 @@ The board sent one line about every two seconds while blinking PB22.
 Use the Python serial console:
 
 ```powershell
-python tools\serial_console.py --list
-python tools\serial_console.py -p COM6 -b 115200 --timestamp --duration 10
+python scripts\serial_console.py --list
+python scripts\serial_console.py -p COM6 -b 115200 --timestamp --duration 10
 ```
 
 Expected output is repeated text similar to:

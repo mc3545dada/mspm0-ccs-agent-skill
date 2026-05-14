@@ -1,4 +1,4 @@
-# UART0 Blocking TX Example
+﻿# UART0 Blocking TX Example
 
 Minimal reference for sending text from the LCKFB Tianmengxing MSPM0G3507 board to a PC over UART0.
 
@@ -6,7 +6,7 @@ This example is based on the verified `26testproject4` UART smoke test. It is no
 
 ## Clock Note
 
-This example uses the 80 MHz clock-tree pattern from `docs/clock_tree_rules.md`:
+This example uses the 80 MHz clock-tree pattern from `references/clock_tree_rules.md`:
 
 - CPUCLK: 80 MHz
 - HFXT: 40 MHz input on PA5 / PA6
@@ -45,8 +45,8 @@ The verified generated header contained:
 Close VOFA+ or any other program occupying the serial port, then run:
 
 ```powershell
-python tools\serial_console.py --list
-python tools\serial_console.py -p COM6 -b 115200 --timestamp --duration 10
+python scripts\serial_console.py --list
+python scripts\serial_console.py -p COM6 -b 115200 --timestamp --duration 10
 ```
 
 Expected output:
