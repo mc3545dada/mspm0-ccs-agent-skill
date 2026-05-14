@@ -10,12 +10,6 @@ Common editable files:
 .syscfg
 main.c
 empty.c
-app/*.c
-app/*.h
-bsp/*.c
-bsp/*.h
-Board/*.c
-Board/*.h
 README.md
 ```
 
@@ -103,5 +97,4 @@ Many Phase 1 tasks can be validated without a board:
 - Check generated headers for expected macros.
 - Check application code compiles against generated headers.
 
-Flashing, UART testing, and PID tuning require hardware and belong to later phases.
-
+Flashing and serial testing require hardware and should be documented only after validation on a real board.

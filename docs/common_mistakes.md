@@ -50,7 +50,7 @@ Inspect `ti_msp_dl_config.h` and use the local declaration.
 
 ## Mistake 4: Assuming Any Pin Can Do Any Function
 
-MSPM0 package pins and peripheral functions are constrained. A pin being present on the chip does not mean it can be used for a selected UART, PWM, I2C, ADC, or timer channel.
+MSPM0 package pins and peripheral functions are constrained. A pin being present on the chip does not mean it can be used for every hardware function.
 
 Use SysConfig, `$assign`, `$suggestSolution`, and generated headers to verify pinmux.
 
@@ -58,19 +58,13 @@ Use SysConfig, `$assign`, `$suggestSolution`, and generated headers to verify pi
 
 Changing a SysConfig `$name` can change generated macros and break application code.
 
-Before renaming, search the project for the old generated names.
+Before renaming, search the project for existing generated names.
 
 ## Mistake 6: Mixing SysConfig With Manual Peripheral Setup
 
 If SysConfig configures a peripheral, do not reinitialize the same peripheral by hand in application code unless there is a clear reason.
 
-Use application code for runtime actions such as:
-
-- Start or stop a timer
-- Set PWM duty cycle
-- Read ADC result
-- Send UART data
-- Toggle GPIO
+Use application code for runtime actions, and keep ownership of pinmux and peripheral setup in `.syscfg`.
 
 ## Mistake 7: Long Work Inside ISR
 
@@ -78,9 +72,8 @@ Avoid:
 
 - Long delays
 - Complex parsing
-- OLED drawing
-- Blocking UART prints
-- Slow sensor transactions
+- Blocking I/O
+- Slow peripheral transactions
 
 Inside an ISR, record state, clear flags, and return.
 
@@ -106,7 +99,6 @@ Always rebuild or run SysConfig CLI before trusting generated macros.
 
 ## Mistake 10: Treating Hardware Tests As Available
 
-If no MSPM0 board is connected, do not claim that flashing, UART, motor, servo, or sensor behavior was verified.
+If no MSPM0 board is connected, do not claim that flashing or peripheral behavior was verified.
 
 Report source-level and build-level validation separately from hardware validation.
-

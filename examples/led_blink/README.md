@@ -1,17 +1,18 @@
-# LED Blink Example
+# Tianmengxing PB22 LED Blink Example
 
-Minimal reference for blinking one GPIO LED in an MSPM0 CCS + SysConfig project.
+Minimal reference for blinking the onboard LED on the LCKFB Tianmengxing MSPM0G3507 board.
 
-This is not a complete CCS import project. It is an agent-readable reference showing which parts belong in `.syscfg` and which parts belong in application code.
+This example is based on the validated workflow in `docs/validated_workflow.md`. It is not a complete CCS import project. It is an agent-readable reference showing the `.syscfg` and C patterns that were verified on real hardware.
 
 ## Files
 
-- `example.syscfg`: GPIO output configuration pattern
+- `example.syscfg`: PB22 GPIO output configuration pattern
 - `main.c`: DriverLib application code using generated macros
 
 ## Agent Notes
 
 - Configure the LED pin in `.syscfg`.
+- On the Tianmengxing MSPM0G3507 board, the onboard LED used by the LCKFB LED tutorial is PB22.
 - Do not manually edit generated `ti_msp_dl_config.c` or `ti_msp_dl_config.h`.
 - After changing `example.syscfg`, run SysConfig or rebuild the real CCS project.
 - Confirm the generated init function and macro names in the local generated header.
@@ -21,10 +22,10 @@ This is not a complete CCS import project. It is an agent-readable reference sho
 The example expects generated names similar to:
 
 ```c
-led_PORT
-led_PIN_22_PIN
+LED_PORT
+LED_PIN_22_PIN
 SYSCFG_DL_init()
 ```
 
-Real projects may generate different names.
+Real projects may generate different names if `$name` or pin names are changed.
 

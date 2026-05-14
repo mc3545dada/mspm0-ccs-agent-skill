@@ -1,28 +1,28 @@
 /**
- * Example SysConfig file for an MSPM0G3507 LED blink reference.
- * Adapt device, package, SDK product, pin, and names to the real project.
+ * Example SysConfig file for the LCKFB Tianmengxing MSPM0G3507 PB22 LED.
+ * This pattern was validated on real hardware with MSPM0 SDK 2.10.00.04 and SysConfig 1.26.2.
  *
- * @cliArgs --device "MSPM0G350X" --part "Default" --package "LQFP-64(PM)" --product "mspm0_sdk@2.05.01.01"
- * @v2CliArgs --device "MSPM0G3507" --package "LQFP-64(PM)" --product "mspm0_sdk@2.05.01.01"
- * @versions {"tool":"1.24.0+4110"}
+ * @cliArgs --device "MSPM0G350X" --part "Default" --package "LQFP-64(PM)" --product "mspm0_sdk@2.10.00.04"
+ * @v2CliArgs --device "MSPM0G3507" --package "LQFP-64(PM)" --product "mspm0_sdk@2.10.00.04"
+ * @versions {"tool":"1.26.2+4477"}
  */
 
-const GPIO = scripting.addModule("/ti/driverlib/GPIO", {}, false);
-const GPIO1 = GPIO.addInstance();
+const GPIO   = scripting.addModule("/ti/driverlib/GPIO", {}, false);
+const GPIO1  = GPIO.addInstance();
 const SYSCTL = scripting.addModule("/ti/driverlib/SYSCTL");
-const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
 
-GPIO1.$name                         = "led";
+GPIO1.$name                         = "LED";
 GPIO1.port                          = "PORTB";
 GPIO1.associatedPins[0].$name       = "PIN_22";
 GPIO1.associatedPins[0].assignedPin = "22";
-GPIO1.associatedPins[0].direction   = "OUTPUT";
+
+const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
 
 SYSCTL.forceDefaultClkConfig = true;
-SYSCTL.clockTreeEn           = true;
 
+GPIO1.associatedPins[0].pin.$suggestSolution = "PB22";
 Board.peripheral.$suggestSolution            = "DEBUGSS";
 Board.peripheral.swclkPin.$suggestSolution   = "PA20";
 Board.peripheral.swdioPin.$suggestSolution   = "PA19";
-GPIO1.associatedPins[0].pin.$suggestSolution = "PB22";
+SYSCTL.peripheral.$suggestSolution           = "SYSCTL";
 

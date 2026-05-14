@@ -23,28 +23,20 @@ Changing any of these can effectively migrate the project. Ask the user first.
 
 ## Common Structure
 
-MSPM0 `.syscfg` files often include:
+MSPM0 `.syscfg` files often include module imports and instances:
 
 ```js
 const GPIO = scripting.addModule("/ti/driverlib/GPIO", {}, false);
 const GPIO1 = GPIO.addInstance();
 ```
 
-Instances then set names, ports, pins, interrupts, peripheral assignments, clock settings, and generated configuration names:
+Instances then set names, ports, pins, clock settings, and generated configuration names. The validated Tianmengxing LED workflow uses:
 
 ```js
-GPIO1.$name = "led";
+GPIO1.$name = "LED";
 GPIO1.port = "PORTB";
 GPIO1.associatedPins[0].$name = "PIN_22";
 GPIO1.associatedPins[0].assignedPin = "22";
-```
-
-Peripheral modules may also use `$assign`:
-
-```js
-UART1.peripheral.$assign = "UART0";
-UART1.peripheral.rxPin.$assign = "PA11";
-UART1.peripheral.txPin.$assign = "PA10";
 ```
 
 ## Editing Strategy
@@ -76,10 +68,9 @@ These files are regenerated and may be overwritten.
 It is fine to read generated headers to learn macro names such as:
 
 ```c
-UART_0_INST
-UART_0_INST_INT_IRQN
-led_PORT
-led_PIN_22_PIN
+LED_PORT
+LED_PIN_22_PIN
+SYSCFG_DL_init
 ```
 
 But configuration changes belong in `.syscfg`.
@@ -111,4 +102,3 @@ Before finalizing a `.syscfg` change:
 - Confirm no generated files were manually edited.
 - Confirm application code uses generated names from `ti_msp_dl_config.h`.
 - Confirm SysConfig or CCS build has been run, or clearly report that it still needs to be run.
-

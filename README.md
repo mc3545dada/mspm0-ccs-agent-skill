@@ -14,7 +14,7 @@
 - 避免手动修改 SysConfig 生成文件
 - 使用 TI DriverLib 和生成的宏
 - 理解 CCS / CCS Theia 工程结构
-- 为电赛常见外设和控制代码提供后续参考
+- 记录已经实机验证过的工作流
 
 ## 适用场景
 
@@ -22,8 +22,8 @@
 - 立创天猛星 MSPM0G3507
 - TI MSPM0 LaunchPad
 - MSPM0G3507 / MSPM0L 系列工程
-- GPIO、UART、PWM、I2C、ADC、Timer 等外设配置
-- 电机、舵机、OLED、PID、云台、小车等常见电赛模块
+- SysConfig / DriverLib / CCS 工程规则
+- 已验证的 PB22 板载 LED 闪灯流程
 
 ## 快速使用
 
@@ -46,14 +46,14 @@ CLAUDE.md
 示例提示词：
 
 ```text
-请先阅读 MSPM0 agent 规则，检查当前工程的 .syscfg 和 ti_msp_dl_config.h，然后帮我安全地增加 UART 调试功能。
+请先阅读 MSPM0 agent 规则，检查当前工程的 .syscfg 和 ti_msp_dl_config.h，然后帮我安全地配置天猛星 PB22 板载 LED。
 ```
 
 ## 核心规则
 
 - `.syscfg` 是引脚、外设、时钟和生成代码的源配置文件。
 - 不要手动修改 `ti_msp_dl_config.c` / `ti_msp_dl_config.h`。
-- 修改 GPIO、UART、PWM、I2C、ADC、Timer 等配置时，优先修改 `.syscfg`。
+- 修改硬件配置时，优先修改 `.syscfg`。
 - 修改 `.syscfg` 后，需要重新运行 SysConfig 或重新构建 CCS 工程。
 - 应用代码应使用 SysConfig 生成的宏和 TI DriverLib API。
 - 不要猜生成函数和宏名，先查看生成的 `ti_msp_dl_config.h`。
@@ -74,19 +74,11 @@ docs/
   validated_workflow.md
 snippets/
   gpio_output_led.syscfg.md
-  gpio_input_key_interrupt.syscfg.md
-  uart_115200.syscfg.md
-  pwm_motor.syscfg.md
-  i2c_oled.syscfg.md
-  adc_sampling.syscfg.md
-  timer_interrupt.syscfg.md
 examples/
   led_blink/
-  uart_echo/
-  pwm_motor/
 ```
 
-当前阶段以规则、`.syscfg` 片段和最小参考例程为主，不需要连接 MSPM0 硬件。
+当前阶段以规则、已验证 `.syscfg` 片段和 PB22 LED 最小参考例程为主。
 
 `examples/` 目录不是完整 CCS 导入工程，而是给 Agent 和用户参考的最小结构：`README.md`、`main.c` 和 `example.syscfg`。
 
@@ -97,8 +89,8 @@ examples/
 - `.syscfg` 静态检查工具
 - SysConfig CLI / CCS 构建验证工具
 - 自动烧录流程
-- Python 串口收发工具
-- 基于串口的 PID / 电机 / 舵机 / 云台参数调试工具
+- Python 串口收发工具，在实机验证后再加入示例
+- 更多外设示例，在官方资料或实测验证后再加入
 
 ## 参考资料
 

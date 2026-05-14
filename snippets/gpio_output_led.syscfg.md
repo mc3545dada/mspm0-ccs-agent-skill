@@ -1,40 +1,46 @@
-# GPIO Output LED SysConfig Snippet
+# Tianmengxing PB22 LED SysConfig Snippet
 
 ## Use Case
 
-Configure one digital output pin for an LED or simple enable signal.
+Configure the onboard LED on the LCKFB Tianmengxing MSPM0G3507 board.
+
+This pattern was validated on real hardware. The board LED uses PB22.
 
 ## Agent Notes
 
 - Add or edit GPIO in `.syscfg`; do not write pinmux setup by hand in generated C files.
-- Check whether the board LED is active-high or active-low.
-- Reuse the local naming style. Many MSPM0 projects generate names like `led_PORT` and `led_PIN_22_PIN`.
+- Use the exact generated names from the current project.
+- The validated pattern uses `LED_PORT` and `LED_PIN_22_PIN`.
 - Confirm the generated macro names in `ti_msp_dl_config.h` after rebuilding.
 
 ## Example `.syscfg` Pattern
 
 ```js
-const GPIO = scripting.addModule("/ti/driverlib/GPIO", {}, false);
-const GPIO1 = GPIO.addInstance();
+const GPIO   = scripting.addModule("/ti/driverlib/GPIO", {}, false);
+const GPIO1  = GPIO.addInstance();
+const SYSCTL = scripting.addModule("/ti/driverlib/SYSCTL");
 
-GPIO1.$name                         = "led";
+GPIO1.$name                         = "LED";
 GPIO1.port                          = "PORTB";
 GPIO1.associatedPins[0].$name       = "PIN_22";
 GPIO1.associatedPins[0].assignedPin = "22";
-GPIO1.associatedPins[0].direction   = "OUTPUT";
-```
 
-If the project already has a `const GPIO = ...` declaration, add only a new instance:
+const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
 
-```js
-const GPIO2 = GPIO.addInstance();
+SYSCTL.forceDefaultClkConfig = true;
+
+GPIO1.associatedPins[0].pin.$suggestSolution = "PB22";
+Board.peripheral.$suggestSolution            = "DEBUGSS";
+Board.peripheral.swclkPin.$suggestSolution   = "PA20";
+Board.peripheral.swdioPin.$suggestSolution   = "PA19";
+SYSCTL.peripheral.$suggestSolution           = "SYSCTL";
 ```
 
 ## Expected Generated Macro Style
 
 ```c
-#define led_PORT        (GPIOB)
-#define led_PIN_22_PIN  (DL_GPIO_PIN_22)
+#define LED_PORT        (GPIOB)
+#define LED_PIN_22_PIN  (DL_GPIO_PIN_22)
 ```
 
 The exact names depend on `$name` and pin `$name`.
@@ -48,9 +54,12 @@ int main(void)
 {
     SYSCFG_DL_init();
 
-    while (1) {
-        DL_GPIO_togglePins(led_PORT, led_PIN_22_PIN);
-        delay_cycles(3200000);
+    while (1)
+    {
+        DL_GPIO_clearPins(LED_PORT, LED_PIN_22_PIN);
+        delay_cycles(32000000);
+        DL_GPIO_setPins(LED_PORT, LED_PIN_22_PIN);
+        delay_cycles(32000000);
     }
 }
 ```
@@ -61,7 +70,7 @@ Use the generated init function spelling from the local project.
 
 - `.syscfg` metadata is unchanged.
 - No generated `ti_msp_dl_config.*` file was manually edited.
-- The selected package pin is valid for GPIO.
-- The generated header contains the expected port and pin macros.
-- The application calls the generated SysConfig init function before toggling the pin.
+- The generated header contains `LED_PORT` and `LED_PIN_22_PIN`.
+- The application calls `SYSCFG_DL_init()` before touching GPIO.
+- The LED is observed blinking on the board after flashing.
 
