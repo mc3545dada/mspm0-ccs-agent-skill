@@ -35,10 +35,13 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 - Use `docs/validated_workflow.md` for the verified Tianmengxing MSPM0G3507 PB22 LED workflow.
 - Use `docs/cli_validation.md` for the SysConfig CLI -> gmake -> DSLite/J-Link command chain.
 - Use `docs/clock_tree_rules.md` before changing CPUCLK, SYSPLL, HFXT, MFCLK, UART clocks, or delay-cycle assumptions.
+- Use `docs/uart_blocking_tx.md` for the verified UART0 blocking transmit smoke test before moving to DMA or variable-length receive.
 
 ## Tools
 
 Run `python tools/check_syscfg.py <project-dir>` when this repository is available and you need a quick static check of a CCS project. The tool checks `.syscfg` metadata, generated SysConfig files, assigned pins, init-function spelling, and prints validation command hints when it can infer them from the project.
+
+Run `python tools/serial_console.py --list` to list PC serial ports. For the verified CH340 setup, use `python tools/serial_console.py -p COM6 -b 115200 --timestamp --duration 10` after closing other serial tools such as VOFA+.
 
 ## Expected Validation
 

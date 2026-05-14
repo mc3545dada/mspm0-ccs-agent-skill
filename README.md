@@ -80,6 +80,15 @@ python tools\check_syscfg.py C:\Users\3545\workspace_ccstheia\26testproject1
 
 完整命令行验证链路见 `docs/cli_validation.md`。
 
+串口接收测试：
+
+```powershell
+python tools\serial_console.py --list
+python tools\serial_console.py -p COM6 -b 115200 --timestamp --duration 10
+```
+
+如果 VOFA+ 或其他串口助手已经打开同一个 COM 口，Python 会无法打开该串口。测试 Python 工具前需要先关闭占用串口的软件。
+
 ## 使用前检查
 
 如果希望 Agent 后续能直接通过命令行编译和烧录，建议先手动确认两件事：
@@ -141,11 +150,14 @@ docs/
   cli_validation.md
   reference_projects.md
   clock_tree_rules.md
+  uart_blocking_tx.md
 tools/
   check_syscfg.py
+  serial_console.py
 snippets/
   clock_80mhz_mfclk.syscfg.md
   gpio_output_led.syscfg.md
+  uart0_blocking_tx.syscfg.md
 examples/
   empty_project/
   led_blink/
@@ -160,7 +172,8 @@ examples/
 - 继续增强 `.syscfg` 静态检查
 - 将 SysConfig CLI、gmake、DSLite/J-Link 流程做成更完整的命令行验证工具
 - 增加自动烧录封装
-- 增加 Python 串口收发工具
+- 增强 Python 串口收发工具
+- 记录 UART 阻塞发送基线，后续扩展到 DMA / 不定长收发
 - 在串口工具稳定后，探索 PID / 舵机 / 云台等参数自动调整流程
 - 增加更多外设示例，但只在官方资料或实测验证后加入
 
