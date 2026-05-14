@@ -2,7 +2,15 @@
 
 面向 TI MSPM0 + CCS / CCS Theia + SysConfig + DriverLib 的 AI 编程助手 skill 包。
 
-本项目主要服务于国内 MSPM0 开发、电赛备赛和立创天猛星 MSPM0G3507 使用场景，帮助 Claude Code、OpenCode、OpenClaw、Continue、Cursor、Codex 等 CLI / 编辑器 Agent 更安全地理解和修改 MSPM0 CCS 工程。
+本项目主要服务于国内 MSPM0 开发、电赛备赛和 TI官方开发板/立创天猛星等 MSPM0G3507 使用场景，帮助 Claude Code、OpenCode、OpenClaw、Continue、Cursor、Codex 等 CLI / 编辑器 Agent 更安全地理解和修改 MSPM0 CCS 工程。
+
+
+## 主要功能
+### 提供对原生MSPM0+CCS环境的支持，使AI Agent:
+- 通过CLI 修改开发M0系列芯片的.syscfg文件 来初始化引脚
+- 修改 底层/应用层 逻辑并自动编译、烧录程序至连接的开发板
+- 使用scripts中部分工具来进行自动收发串口数据/.syscfg文件检查等
+- 对电机/舵机等结构进行自动调参/逻辑优化等
 
 ## 安装入口
 
@@ -14,7 +22,7 @@ skills/mspm0-ccs/
 
 仓库根目录的 `AGENTS.md` / `CLAUDE.md` 是“开发本仓库时”的 Agent 指令，不是用户安装入口。
 
-## 推荐目录结构
+## 目录结构
 
 ```text
 mspm0-ccs-agent-skill/
@@ -177,4 +185,5 @@ python skills\mspm0-ccs\scripts\serial_console.py -p COM6 -b 115200 --timestamp 
 - TI SysConfig: https://www.ti.com/tool/SYSCONFIG
 - TI MSPM0 SDK: https://www.ti.com/tool/MSPM0-SDK
 - TI MSPM0 SysConfig Guide: https://software-dl.ti.com/msp430/esd/MSPM0-SDK/2_05_01_00/docs/english/tools/sysconfig_guide/doc_guide/doc_guide-srcs/sysconfig_guide.html
+- TI LP-MSPM0G3507 https://www.ti.com.cn/tool/cn/LP-MSPM0G3507
 - 立创天猛星 MSPM0G3507 文档: https://wiki.lckfb.com/zh-hans/tmx-mspm0g3507/
