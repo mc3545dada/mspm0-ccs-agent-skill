@@ -71,6 +71,7 @@ docs/
   ccs_project_rules.md
   driverlib_rules.md
   common_mistakes.md
+  validated_workflow.md
 snippets/
   gpio_output_led.syscfg.md
   gpio_input_key_interrupt.syscfg.md
@@ -88,6 +89,8 @@ examples/
 当前阶段以规则、`.syscfg` 片段和最小参考例程为主，不需要连接 MSPM0 硬件。
 
 `examples/` 目录不是完整 CCS 导入工程，而是给 Agent 和用户参考的最小结构：`README.md`、`main.c` 和 `example.syscfg`。
+
+`docs/validated_workflow.md` 记录了一次已通过实机验证的流程：在立创天猛星 MSPM0G3507 上通过修改 `.syscfg` 配置 PB22 板载 LED，命令行生成、编译、J-Link 烧录后实现闪灯。
 
 ## 后续计划
 
