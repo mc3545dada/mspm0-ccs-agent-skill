@@ -112,3 +112,9 @@ Report source-level and build-level validation separately from hardware validati
 ## Mistake 11: Flashing After Debug Probe Detection Fails
 
 If `dslite -N` cannot list the core or hangs, do not assume flashing will work. Stop stale debug sessions, reconnect the board/probe if needed, and retry detection before erase/program operations.
+
+## Mistake 12: Mixing Up Build Readiness And Probe Readiness
+
+A project that has never been built by CCS may not have `Debug/makefile`, `Debug/subdir_rules.mk`, or a `.out` file. SysConfig CLI can still validate `.syscfg`, but `gmake` and flashing need the generated build structure and output file.
+
+A project that has been built can still fail to flash if `targetConfigs/*.ccxml` points to XDS110 while the real probe is J-Link, or vice versa.

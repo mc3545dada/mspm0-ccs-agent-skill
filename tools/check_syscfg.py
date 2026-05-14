@@ -43,6 +43,17 @@ def find_generated_files(root: Path) -> list[Path]:
     return sorted(p for p in iter_files(root) if p.name in GENERATED_NAMES and has_part(p, root, BUILD_DIRS))
 
 
+def find_output_files(root: Path) -> list[Path]:
+    return sorted(p for p in iter_files(root) if p.suffix == ".out" and has_part(p, root, BUILD_DIRS))
+
+
+def find_target_configs(root: Path) -> list[Path]:
+    target_dir = root / "targetConfigs"
+    if not target_dir.exists():
+        return []
+    return sorted(target_dir.glob("*.ccxml"))
+
+
 def find_source_files(root: Path) -> list[Path]:
     suffixes = {".c", ".h", ".cpp", ".cc", ".hpp"}
     files: list[Path] = []
@@ -145,13 +156,22 @@ def find_validation_hints(root: Path) -> dict[str, str]:
             hints["sysconfig_cli"] = sysconfig.group(0).strip()
         hints["gmake"] = f'gmake -C "{root / "Debug"}" clean all'
 
-    ccxmls = sorted((root / "targetConfigs").glob("*.ccxml"))
+    ccxmls = find_target_configs(root)
     outs = sorted((root / "Debug").glob("*.out"))
     if ccxmls:
         hints["list_debug_cores"] = f'dslite -c "{ccxmls[0]}" -N'
     if ccxmls and outs:
         hints["flash"] = f'dslite -c "{ccxmls[0]}" -e -u "{outs[0]}"'
     return hints
+
+
+def describe_target_config(path: Path) -> str:
+    text = read_text(path)
+    if "segger_j-link_connection.xml" in text or "SEGGER J-Link" in text:
+        return "SEGGER J-Link"
+    if "TIXDS110_Connection.xml" in text or "XDS110" in text:
+        return "TI XDS110"
+    return "unknown"
 
 
 def check_project(root: Path) -> tuple[list[Message], dict[str, object]]:
@@ -224,6 +244,29 @@ def check_project(root: Path) -> tuple[list[Message], dict[str, object]]:
             messages.append(Message("warning", f"源码调用了 {', '.join(sorted(called_names))}，但当前没有生成头文件可确认大小写。"))
         else:
             messages.append(Message("warning", "没有生成头文件，也没有在源码中发现 SysConfig 初始化函数调用。"))
+
+    makefile = root / "Debug" / "makefile"
+    subdir_rules = root / "Debug" / "subdir_rules.mk"
+    if makefile.exists() and subdir_rules.exists():
+        messages.append(Message("ok", "Debug 构建文件已存在，可以尝试使用 gmake -C Debug clean all。", "Debug"))
+    else:
+        messages.append(Message("warning", "Debug 构建文件不完整；新建工程通常需要先在 CCS/CCS Theia 编译一次，或使用 CCS 命令行构建生成 makefile。", "Debug"))
+
+    outputs = find_output_files(root)
+    details["output_files"] = [rel(p, root) for p in outputs]
+    if outputs:
+        messages.append(Message("ok", f"发现可烧录输出文件：{rel(outputs[0], root)}。", rel(outputs[0], root)))
+    else:
+        messages.append(Message("warning", "未发现 Debug/Release 下的 .out 文件；烧录前需要先成功构建工程。"))
+
+    ccxmls = find_target_configs(root)
+    details["target_configs"] = [{"path": rel(p, root), "probe": describe_target_config(p)} for p in ccxmls]
+    if ccxmls:
+        for ccxml in ccxmls:
+            probe = describe_target_config(ccxml)
+            messages.append(Message("info", f"目标配置使用调试器：{probe}。请确认它和实际连接的烧录器一致。", rel(ccxml, root)))
+    else:
+        messages.append(Message("warning", "未发现 targetConfigs/*.ccxml；DSLite 烧录需要目标配置文件。"))
 
     details["validation_hints"] = find_validation_hints(root)
     return messages, details

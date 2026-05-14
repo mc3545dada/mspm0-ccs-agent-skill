@@ -71,6 +71,14 @@ C:\ti\uniflash_9.2.0\dslite.bat `
   -N
 ```
 
+The `.ccxml` must match the physical debug probe. In the verified Tianmengxing setup, the file references `SEGGER J-Link Emulator_0`.
+
+If the project is still configured for XDS110 while the board is connected through J-Link, DSLite can fail before flashing with:
+
+```text
+An attempt to connect to the XDS110 failed.
+```
+
 Flash and run:
 
 ```powershell
@@ -96,3 +104,5 @@ If `dslite -N` hangs or times out, do not continue to flash blindly. Close stale
 - Passing SysConfig and build validation does not replace hardware observation.
 - In the verified Tianmengxing PB22 LED workflow, the final check was the physical board LED blinking once per second.
 - Other boards, debug probes, SDK versions, CCS versions, and pin mappings may require adjustment.
+- A freshly created CCS project may need one manual IDE build before generated makefiles exist.
+- A successfully built project can still fail to flash if `targetConfigs/*.ccxml` uses the wrong debug probe.

@@ -71,10 +71,30 @@ python tools\check_syscfg.py C:\Users\3545\workspace_ccstheia\26testproject1
 - 检查 `Debug/Release` 下的 SysConfig 生成文件
 - 检查 `assignedPin` 和 `$suggestSolution`
 - 检查 `SYSCFG_DL_init()` / `SYSCFG_DL_Init()` 大小写是否和生成头文件一致
+- 检查是否已有 `Debug/makefile`、`.out` 和 `targetConfigs/*.ccxml`
+- 提示当前目标配置使用 J-Link、XDS110 或其他调试器
 - 提醒不要手动修改 `ti_msp_dl_config.c/.h`
 - 根据工程状态提示 SysConfig CLI、gmake、DSLite/J-Link 验证命令
 
 完整命令行验证链路见 `docs/cli_validation.md`。
+
+## 使用前检查
+
+如果希望 Agent 后续能直接通过命令行编译和烧录，建议先手动确认两件事：
+
+1. 在 CCS / CCS Theia 里至少成功编译一次工程。
+
+   这会生成 `Debug/makefile`、`Debug/subdir_rules.mk`、`Debug/ti_msp_dl_config.c/.h` 和 `.out`。没有这些文件时，Agent 仍然可以直接运行 SysConfig CLI 检查 `.syscfg`，但通常不能直接执行 `gmake -C Debug clean all`，也没有 `.out` 可以烧录。
+
+2. 在 CCS 工程属性或 target configuration 中选择实际使用的烧录器。
+
+   如果你实际连接的是 J-Link，但工程仍然是默认 XDS110 配置，编译可能完全正常，但 DSLite 会在连接阶段失败。实测错误类似：
+
+   ```text
+   An attempt to connect to the XDS110 failed.
+   ```
+
+当前实测结论：首次编译和烧录器配置是两个独立条件。首次编译决定命令行构建文件和 `.out` 是否存在；烧录器配置决定 DSLite 是否能连接真实硬件。
 
 ## 核心规则
 
