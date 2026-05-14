@@ -1,4 +1,4 @@
-﻿---
+---
 name: mspm0-ccs
 description: Tool-neutral CLI agent rules for TI MSPM0 development with Code Composer Studio, CCS Theia, SysConfig, and DriverLib. Use when an agent needs to inspect or modify MSPM0 CCS projects, edit .syscfg configuration, avoid generated SysConfig files, use DriverLib APIs, validate SysConfig output, or work on NUEDC-style MSPM0 embedded firmware.
 ---
@@ -14,9 +14,65 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 1. Locate the project `.syscfg` file.
 2. Read the `.syscfg` metadata: device, package, SDK product, and SysConfig tool version.
 3. Inspect generated `ti_msp_dl_config.h` for generated names, macros, IRQ names, and init function spelling.
-4. Read the relevant docs under `references/` before changing hardware configuration.
-5. Make hardware configuration changes in `.syscfg`, not generated files.
-6. Rebuild or run SysConfig CLI after `.syscfg` changes.
+4. Inspect existing module instances, such as GPIO, UART, PWM, I2C, ADC, TIMER, SYSCTL, DMA, and interrupts.
+5. Read the relevant docs under `references/` before changing hardware configuration.
+6. Modify the smallest relevant `.syscfg` section and follow the local naming style.
+7. Update application code to use generated DriverLib macros.
+8. Rebuild or run SysConfig CLI after `.syscfg` changes.
+
+## Core Rules
+
+1. Treat `.syscfg` as the source of truth for pinmux, peripherals, clocks, and generated initialization.
+2. For GPIO, UART, PWM, I2C, SPI, ADC, Timer, clock, DMA, and interrupt setup, prefer changing `.syscfg` rather than hand-written register or generated-code edits.
+3. Read `ti_msp_dl_config.h` to confirm macro names, IRQ names, instance names, and init function spelling.
+4. Application code must call the generated SysConfig init function before using generated peripherals.
+5. If a pin or peripheral conflict occurs, fix `.syscfg` first.
+6. Do not assume a pin is valid only because it exists on the package. Verify pinmux through SysConfig or generated output.
+7. Follow the existing project naming style for modules, pins, macros, and interrupt handlers.
+8. Ask before changing device, package, board, SDK, compiler, CCS version, or debug probe.
+
+## Safe Edit Scope
+
+Usually safe to edit:
+
+- Application source files such as `main.c`, `empty.c`, `app/*.c`, `bsp/*.c`, and matching headers.
+- `.syscfg`.
+- Project documentation.
+- User-owned board support files.
+
+Avoid hand-editing generated or build output files:
+
+- `Debug/ti_msp_dl_config.c`
+- `Debug/ti_msp_dl_config.h`
+- `Release/ti_msp_dl_config.c`
+- `Release/ti_msp_dl_config.h`
+- `Debug/device.opt`
+- `Debug/device_linker.cmd`
+- `Debug/device.cmd.genlibs`
+- `Debug/*.mk`
+- Object files, maps, `.out`, and other build outputs.
+
+Generated files may be inspected, but changes should be made in source files or `.syscfg`.
+
+## DriverLib Rules
+
+- Prefer `DL_GPIO_*`, `DL_UART_*`, `DL_Timer*`, `DL_I2C_*`, and `DL_ADC12_*` APIs.
+- Keep interrupt handlers short.
+- Clear interrupt flags correctly.
+- Use `volatile` for variables shared with interrupt handlers.
+- Avoid long blocking delays inside high-frequency interrupts.
+- Do not mix register-level configuration with SysConfig-generated setup unless the user explicitly requests it and the reason is documented.
+
+## Validation Workflow
+
+1. Run `python scripts/check_syscfg.py <project-dir>` when this skill is available.
+2. After `.syscfg` changes, look for the CCS-generated SysConfig command in `Debug/subdir_rules.mk`.
+3. Run SysConfig CLI directly or rebuild through the CCS-generated makefile.
+4. If CLI validation is unavailable, ask the user to rebuild in CCS and paste SysConfig or compiler errors.
+5. If flashing, confirm `targetConfigs/*.ccxml` matches the physical debug probe.
+6. For automated DSLite flashing, prefer `-r 2 -u` so the target receives a System Reset after programming.
+
+For manual flashing, press the board reset button after programming if the first run appears to use the wrong clock speed.
 
 ## Never Do This
 
@@ -24,27 +80,21 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 - Do not delete `.syscfg` metadata such as `@cliArgs`, `@v2CliArgs`, `@versions`, `--device`, `--package`, or `--product`.
 - Do not guess pinmux validity from a package pin alone.
 - Do not guess whether the generated init function is `SYSCFG_DL_init()` or `SYSCFG_DL_Init()`.
-- Do not migrate device, package, board, SDK, compiler, or CCS version without asking.
+- Do not migrate device, package, board, SDK, compiler, CCS version, or debug probe without asking.
 
-## Read These References
+## Reference Selection
 
-- Use `references/syscfg_rules.md` for safe `.syscfg` edits.
-- Use `references/ccs_project_rules.md` for CCS project layout and generated files.
-- Use `references/driverlib_rules.md` for DriverLib initialization, ISR, and API rules.
-- Use `references/common_mistakes.md` before finalizing changes.
-- Use `references/validated_workflow.md` for the verified Tianmengxing MSPM0G3507 PB22 LED workflow.
-- Use `references/cli_validation.md` for the SysConfig CLI -> gmake -> DSLite/J-Link command chain.
-- Use `references/clock_tree_rules.md` before changing CPUCLK, SYSPLL, HFXT, MFCLK, UART clocks, or delay-cycle assumptions.
-- Use `references/uart_blocking_tx.md` for the verified UART0 blocking transmit smoke test before moving to DMA or variable-length receive.
+- `references/syscfg_rules.md`: safe `.syscfg` edits.
+- `references/ccs_project_rules.md`: CCS project layout and generated files.
+- `references/driverlib_rules.md`: DriverLib initialization, ISR, and API rules.
+- `references/common_mistakes.md`: known agent failure modes.
+- `references/validated_workflow.md`: verified Tianmengxing MSPM0G3507 PB22 LED workflow.
+- `references/cli_validation.md`: SysConfig CLI -> gmake -> DSLite/J-Link command chain.
+- `references/clock_tree_rules.md`: CPUCLK, SYSPLL, HFXT, MFCLK, UART clocks, and `delay_cycles()` assumptions.
+- `references/uart_blocking_tx.md`: verified UART0 blocking transmit smoke test before DMA or variable-length receive.
 
 ## Tools
 
 Run `python scripts/check_syscfg.py <project-dir>` when this skill is available and you need a quick static check of a CCS project. The tool checks `.syscfg` metadata, generated SysConfig files, assigned pins, init-function spelling, and prints validation command hints when it can infer them from the project.
 
 Run `python scripts/serial_console.py --list` to list PC serial ports. For the verified CH340 setup, use `python scripts/serial_console.py -p COM6 -b 115200 --timestamp --duration 10` after closing other serial tools such as VOFA+.
-
-## Expected Validation
-
-After modifying `.syscfg`, run the generated SysConfig CLI command if available, or rebuild the CCS project. If no local toolchain is available, clearly report that validation is pending and tell the user which command or IDE build action to run.
-
-For automated DSLite flashing, prefer a system reset after programming: `-r 2 -u`. Manual flashing may require pressing the board reset button after programming, especially after clock-tree changes.
