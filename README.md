@@ -2,28 +2,34 @@
 
 面向 TI MSPM0 + CCS / CCS Theia + SysConfig + DriverLib 的 AI 编程助手规则包。
 
-本项目主要服务于国内 MSPM0 开发和电赛场景，帮助 Claude Code、OpenCode、OpenClaw、Continue、Cursor、Codex 等 AI 编程助手更安全地理解和修改 MSPM0 CCS 工程。
+本项目主要服务于国内 MSPM0 开发、电赛备赛和立创天猛星 MSPM0G3507 使用场景，帮助 Claude Code、OpenCode、OpenClaw、Continue、Cursor、Codex 等 CLI / 编辑器 Agent 更安全地理解和修改 MSPM0 CCS 工程。
 
 ## 项目定位
 
-这不是芯片库，也不是完整工程模板，而是一套面向 AI Agent 的工程规则与参考文档。
+这不是芯片库，也不是完整工程模板，而是一套给 Agent 使用的工程规则、参考片段和验证工具。
 
-它用于约束 Agent 在 MSPM0 CCS 工程中的行为，尤其是：
+它关注几件事：
 
 - 正确处理 `.syscfg`
 - 避免手动修改 SysConfig 生成文件
-- 使用 TI DriverLib 和生成的宏
+- 使用 TI DriverLib 和生成宏
 - 理解 CCS / CCS Theia 工程结构
-- 记录已经实机验证过的工作流
+- 固化已经实机验证过的命令行流程
 
-## 适用场景
+## 已验证环境
 
-- 全国大学生电子设计竞赛
-- 立创天猛星 MSPM0G3507
-- TI MSPM0 LaunchPad
-- MSPM0G3507 / MSPM0L 系列工程
-- SysConfig / DriverLib / CCS 工程规则
-- 已验证的 PB22 板载 LED 闪灯流程
+目前已实机验证的组合是：
+
+- 开发板：立创天猛星 MSPM0G3507
+- 开发环境：CCS / CCS Theia
+- SDK：MSPM0 SDK 2.10.00.04
+- SysConfig：1.26.2
+- 编译器：TI Arm Clang 4.0.3 LTS
+- 烧录器：J-Link
+- 烧录工具：UniFlash / DSLite
+- 验证外设：PB22 板载 LED，一秒闪烁
+
+其他开发板、芯片封装、SDK/CCS 版本、调试器或烧录方式可能也能使用本项目规则，但尚未百分百确认。迁移到其他组合时，应先运行静态检查和最小外设验证。
 
 ## 快速使用
 
@@ -37,17 +43,38 @@ CLAUDE.md
 
 推荐用法：
 
-- 通用 Agent：使用 `AGENTS.md`
-- Claude Code：使用 `CLAUDE.md`
-- 支持 skill 机制的工具：使用 `SKILL.md`
+- 通用 Agent：参考 `AGENTS.md`
+- Claude Code：参考 `CLAUDE.md`
+- 支持 skill 机制的工具：参考 `SKILL.md`
 
-可以把对应文件复制到你的 MSPM0 CCS 工程根目录，然后让 Agent 先阅读规则再修改工程。
+可以把对应文件复制到你的 MSPM0 CCS 工程根目录，让 Agent 先读取规则，再修改工程。
 
 示例提示词：
 
 ```text
-请先阅读 MSPM0 agent 规则，检查当前工程的 .syscfg 和 ti_msp_dl_config.h，然后帮我安全地配置天猛星 PB22 板载 LED。
+请先阅读 MSPM0 agent 规则，检查当前工程的 .syscfg 和 ti_msp_dl_config.h，
+然后帮我安全地配置天猛星 PB22 板载 LED。
 ```
+
+## 工具
+
+静态检查当前 CCS 工程：
+
+```powershell
+python tools\check_syscfg.py C:\Users\3545\workspace_ccstheia\26testproject1
+```
+
+检查内容包括：
+
+- 查找 `.syscfg`
+- 检查 `@cliArgs`、`@v2CliArgs`、`@versions` 等元数据
+- 检查 `Debug/Release` 下的 SysConfig 生成文件
+- 检查 `assignedPin` 和 `$suggestSolution`
+- 检查 `SYSCFG_DL_init()` / `SYSCFG_DL_Init()` 大小写是否和生成头文件一致
+- 提醒不要手动修改 `ti_msp_dl_config.c/.h`
+- 根据工程状态提示 SysConfig CLI、gmake、DSLite/J-Link 验证命令
+
+完整命令行验证链路见 `docs/cli_validation.md`。
 
 ## 核心规则
 
@@ -72,25 +99,29 @@ docs/
   driverlib_rules.md
   common_mistakes.md
   validated_workflow.md
+  cli_validation.md
+  reference_projects.md
+tools/
+  check_syscfg.py
 snippets/
   gpio_output_led.syscfg.md
 examples/
+  empty_project/
   led_blink/
 ```
 
-当前阶段以规则、已验证 `.syscfg` 片段和 PB22 LED 最小参考例程为主。
+`examples/empty_project/` 记录未编译空工程的最小基线。
 
-`examples/` 目录不是完整 CCS 导入工程，而是给 Agent 和用户参考的最小结构：`README.md`、`main.c` 和 `example.syscfg`。
-
-`docs/validated_workflow.md` 记录了一次已通过实机验证的流程：在立创天猛星 MSPM0G3507 上通过修改 `.syscfg` 配置 PB22 板载 LED，命令行生成、编译、J-Link 烧录后实现闪灯。
+`examples/led_blink/` 记录已经在立创天猛星 MSPM0G3507 + PB22 上实机验证过的 LED 闪烁模式。
 
 ## 后续计划
 
-- `.syscfg` 静态检查工具
-- SysConfig CLI / CCS 构建验证工具
-- 自动烧录流程
-- Python 串口收发工具，在实机验证后再加入示例
-- 更多外设示例，在官方资料或实测验证后再加入
+- 继续增强 `.syscfg` 静态检查
+- 将 SysConfig CLI、gmake、DSLite/J-Link 流程做成更完整的命令行验证工具
+- 增加自动烧录封装
+- 增加 Python 串口收发工具
+- 在串口工具稳定后，探索 PID / 舵机 / 云台等参数自动调整流程
+- 增加更多外设示例，但只在官方资料或实测验证后加入
 
 ## 参考资料
 

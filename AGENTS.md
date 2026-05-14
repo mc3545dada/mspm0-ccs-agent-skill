@@ -64,6 +64,12 @@ Generated files may be inspected, but changes should be made in source files or 
 
 ## Validation
 
+If this repository is available, run the static checker first:
+
+```text
+python tools/check_syscfg.py <project-dir>
+```
+
 After changing `.syscfg`, look for a CCS-generated SysConfig command in a build makefile such as `Debug/subdir_rules.mk`. A typical command calls `sysconfig_cli` with:
 
 ```text
@@ -74,4 +80,3 @@ After changing `.syscfg`, look for a CCS-generated SysConfig command in a build 
 ```
 
 If CLI validation is not available, ask the user to rebuild in CCS and paste any SysConfig or compiler errors.
-

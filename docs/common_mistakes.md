@@ -32,6 +32,12 @@ Do not remove:
 
 Without this metadata, SysConfig may reopen or regenerate with the wrong assumptions.
 
+Also keep the comment syntax valid. If a file uses `//@cliArgs`, do not rewrite it as `* @cliArgs` unless the line is inside an active `/* ... */` block. A real observed failure from this mistake is:
+
+```text
+SyntaxError: Unexpected token '*'
+```
+
 ## Mistake 3: Guessing Init Function Capitalization
 
 Do not assume:
@@ -102,3 +108,7 @@ Always rebuild or run SysConfig CLI before trusting generated macros.
 If no MSPM0 board is connected, do not claim that flashing or peripheral behavior was verified.
 
 Report source-level and build-level validation separately from hardware validation.
+
+## Mistake 11: Flashing After Debug Probe Detection Fails
+
+If `dslite -N` cannot list the core or hangs, do not assume flashing will work. Stop stale debug sessions, reconnect the board/probe if needed, and retry detection before erase/program operations.

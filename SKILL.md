@@ -32,8 +32,13 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 - Use `docs/ccs_project_rules.md` for CCS project layout and generated files.
 - Use `docs/driverlib_rules.md` for DriverLib initialization, ISR, and API rules.
 - Use `docs/common_mistakes.md` before finalizing changes.
+- Use `docs/validated_workflow.md` for the verified Tianmengxing MSPM0G3507 PB22 LED workflow.
+- Use `docs/cli_validation.md` for the SysConfig CLI -> gmake -> DSLite/J-Link command chain.
+
+## Tools
+
+Run `python tools/check_syscfg.py <project-dir>` when this repository is available and you need a quick static check of a CCS project. The tool checks `.syscfg` metadata, generated SysConfig files, assigned pins, init-function spelling, and prints validation command hints when it can infer them from the project.
 
 ## Expected Validation
 
 After modifying `.syscfg`, run the generated SysConfig CLI command if available, or rebuild the CCS project. If no local toolchain is available, clearly report that validation is pending and tell the user which command or IDE build action to run.
-

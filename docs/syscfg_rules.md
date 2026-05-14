@@ -21,6 +21,8 @@ These fields let SysConfig reopen the project with the correct device, package, 
 
 Changing any of these can effectively migrate the project. Ask the user first.
 
+Keep the original comment syntax valid. Some empty CCS projects use line comments such as `//@cliArgs` after the opening header block. Do not convert those lines to `* @cliArgs` unless they are actually inside a `/* ... */` comment block; otherwise SysConfig may parse the stray `*` as JavaScript and fail before checking the configuration.
+
 ## Common Structure
 
 MSPM0 `.syscfg` files often include module imports and instances:

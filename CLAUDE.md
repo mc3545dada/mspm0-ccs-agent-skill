@@ -39,4 +39,6 @@ Use the spelling declared in `ti_msp_dl_config.h`.
 - `docs/ccs_project_rules.md` for project layout and generated files
 - `docs/driverlib_rules.md` for DriverLib and interrupt patterns
 - `docs/common_mistakes.md` for known agent failure modes
+- `docs/cli_validation.md` for SysConfig CLI, gmake, and DSLite/J-Link validation
 
+When this repository is available, run `python tools/check_syscfg.py <project-dir>` before or after `.syscfg` edits to catch metadata, generated-file, assigned-pin, and init-function issues.

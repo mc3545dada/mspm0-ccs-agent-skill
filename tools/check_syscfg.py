@@ -1,0 +1,266 @@
+#!/usr/bin/env python3
+"""Static checker for TI MSPM0 CCS / SysConfig projects."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+from dataclasses import dataclass, asdict
+from pathlib import Path
+from typing import Iterable
+
+
+GENERATED_NAMES = {"ti_msp_dl_config.c", "ti_msp_dl_config.h"}
+BUILD_DIRS = {"Debug", "Release"}
+SKIP_DIRS = {".git", ".svn", ".hg", "__pycache__"}
+
+
+@dataclass
+class Message:
+    level: str
+    text: str
+    path: str | None = None
+
+
+def rel(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def find_syscfg_files(root: Path) -> list[Path]:
+    return sorted(p for p in iter_files(root) if p.suffix == ".syscfg" and not has_part(p, root, BUILD_DIRS))
+
+
+def find_generated_files(root: Path) -> list[Path]:
+    return sorted(p for p in iter_files(root) if p.name in GENERATED_NAMES and has_part(p, root, BUILD_DIRS))
+
+
+def find_source_files(root: Path) -> list[Path]:
+    suffixes = {".c", ".h", ".cpp", ".cc", ".hpp"}
+    files: list[Path] = []
+    for path in iter_files(root):
+        if path.suffix not in suffixes:
+            continue
+        if has_part(path, root, BUILD_DIRS):
+            continue
+        if path.name in GENERATED_NAMES:
+            continue
+        files.append(path)
+    return sorted(files)
+
+
+def iter_files(root: Path) -> Iterable[Path]:
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [name for name in dirnames if name not in SKIP_DIRS]
+        for filename in filenames:
+            yield Path(dirpath) / filename
+
+
+def has_part(path: Path, root: Path, parts: set[str]) -> bool:
+    return bool(set(path.relative_to(root).parts) & parts)
+
+
+def parse_metadata(text: str) -> dict[str, str | bool]:
+    fields: dict[str, str | bool] = {}
+    fields["has_cliArgs"] = "@cliArgs" in text or "@v2CliArgs" in text
+    fields["has_versions"] = "@versions" in text
+
+    for key in ("device", "package", "product", "part"):
+        match = re.search(rf"--{key}\s+\"([^\"]+)\"", text)
+        if match:
+            fields[key] = match.group(1)
+
+    version_match = re.search(r"@versions\s+(\{[^\n]+\})", text)
+    if version_match:
+        fields["versions"] = version_match.group(1).strip()
+
+    return fields
+
+
+def metadata_comment_syntax_errors(text: str) -> list[int]:
+    errors: list[int] = []
+    in_block = False
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        before = in_block
+        if "/*" in stripped:
+            in_block = True
+        if stripped.startswith("* @") and not before:
+            errors.append(lineno)
+        if "*/" in stripped:
+            in_block = False
+    return errors
+
+
+def parse_assigned_pins(text: str) -> list[dict[str, str]]:
+    pins: list[dict[str, str]] = []
+    for match in re.finditer(
+        r"(?P<expr>[A-Za-z0-9_.$\[\]]+associatedPins\[\d+\])\.assignedPin\s*=\s*\"(?P<pin>[^\"]+)\"",
+        text,
+    ):
+        expr = match.group("expr")
+        pin = match.group("pin")
+        suggestion = ""
+        pattern = re.escape(expr) + r"\.pin\.\$suggestSolution\s*=\s*\"([^\"]+)\""
+        suggestion_match = re.search(pattern, text)
+        if suggestion_match:
+            suggestion = suggestion_match.group(1)
+        pins.append({"expr": expr, "assignedPin": pin, "suggestSolution": suggestion})
+    return pins
+
+
+def parse_header_init_names(headers: Iterable[Path]) -> set[str]:
+    names: set[str] = set()
+    for header in headers:
+        text = read_text(header)
+        names.update(re.findall(r"\bvoid\s+(SYSCFG_DL_[A-Za-z]*[Ii]nit)\s*\(", text))
+    return names
+
+
+def parse_source_init_calls(sources: Iterable[Path]) -> dict[str, list[str]]:
+    calls: dict[str, list[str]] = {}
+    for source in sources:
+        text = read_text(source)
+        names = sorted(set(re.findall(r"\b(SYSCFG_DL_[A-Za-z]*[Ii]nit)\s*\(", text)))
+        if names:
+            calls[str(source)] = names
+    return calls
+
+
+def find_validation_hints(root: Path) -> dict[str, str]:
+    hints: dict[str, str] = {}
+    makefile = root / "Debug" / "subdir_rules.mk"
+    if makefile.exists():
+        text = read_text(makefile)
+        sysconfig = re.search(r'"[^"]*sysconfig_cli\.bat"[^\r\n]+', text)
+        if sysconfig:
+            hints["sysconfig_cli"] = sysconfig.group(0).strip()
+        hints["gmake"] = f'gmake -C "{root / "Debug"}" clean all'
+
+    ccxmls = sorted((root / "targetConfigs").glob("*.ccxml"))
+    outs = sorted((root / "Debug").glob("*.out"))
+    if ccxmls:
+        hints["list_debug_cores"] = f'dslite -c "{ccxmls[0]}" -N'
+    if ccxmls and outs:
+        hints["flash"] = f'dslite -c "{ccxmls[0]}" -e -u "{outs[0]}"'
+    return hints
+
+
+def check_project(root: Path) -> tuple[list[Message], dict[str, object]]:
+    messages: list[Message] = []
+    details: dict[str, object] = {}
+
+    syscfg_files = find_syscfg_files(root)
+    details["syscfg_files"] = [rel(p, root) for p in syscfg_files]
+    if not syscfg_files:
+        messages.append(Message("error", "没有找到 .syscfg 文件。"))
+    elif len(syscfg_files) > 1:
+        messages.append(Message("warning", "找到多个 .syscfg 文件，修改前需要确认当前 CCS 工程使用哪一个。"))
+    else:
+        messages.append(Message("ok", f"找到 .syscfg：{rel(syscfg_files[0], root)}", rel(syscfg_files[0], root)))
+
+    for syscfg in syscfg_files:
+        text = read_text(syscfg)
+        metadata = parse_metadata(text)
+        details[f"metadata:{rel(syscfg, root)}"] = metadata
+        syntax_errors = metadata_comment_syntax_errors(text)
+        if syntax_errors:
+            messages.append(Message("error", f"疑似无效的 SysConfig 元数据注释行：{', '.join(map(str, syntax_errors))}。", rel(syscfg, root)))
+        if metadata.get("has_cliArgs"):
+            messages.append(Message("ok", ".syscfg 保留了 @cliArgs / @v2CliArgs 元数据。", rel(syscfg, root)))
+        else:
+            messages.append(Message("warning", ".syscfg 未发现 @cliArgs / @v2CliArgs，SysConfig 设备/封装信息可能不完整。", rel(syscfg, root)))
+        if metadata.get("has_versions"):
+            messages.append(Message("ok", ".syscfg 保留了 @versions 元数据。", rel(syscfg, root)))
+        else:
+            messages.append(Message("warning", ".syscfg 未发现 @versions，可能是未编译空工程或旧模板，需要用 CCS/SysConfig 确认工具版本。", rel(syscfg, root)))
+
+        pins = parse_assigned_pins(text)
+        details[f"assigned_pins:{rel(syscfg, root)}"] = pins
+        if pins:
+            for pin in pins:
+                suffix = f"，建议解为 {pin['suggestSolution']}" if pin["suggestSolution"] else ""
+                messages.append(Message("ok", f"发现 assignedPin={pin['assignedPin']}{suffix}。", rel(syscfg, root)))
+        elif "/ti/driverlib/GPIO" in text:
+            messages.append(Message("warning", "导入了 GPIO 模块，但没有发现 assignedPin；请确认是否依赖自动求解。", rel(syscfg, root)))
+        else:
+            messages.append(Message("info", "未发现 assignedPin；如果是空工程，这是正常现象。", rel(syscfg, root)))
+
+    generated = find_generated_files(root)
+    details["generated_files"] = [rel(p, root) for p in generated]
+    if generated:
+        messages.append(Message("info", "发现 SysConfig 生成文件；只能读取确认宏名，不要手动修改。"))
+    else:
+        messages.append(Message("warning", "未发现 Debug/Release 下的 ti_msp_dl_config.c/.h，工程可能尚未生成或尚未编译。"))
+
+    headers = [p for p in generated if p.name == "ti_msp_dl_config.h"]
+    header_init_names = parse_header_init_names(headers)
+    details["header_init_names"] = sorted(header_init_names)
+
+    source_calls = parse_source_init_calls(find_source_files(root))
+    details["source_init_calls"] = {rel(Path(k), root): v for k, v in source_calls.items()}
+    called_names = {name for names in source_calls.values() for name in names}
+
+    if header_init_names:
+        messages.append(Message("ok", f"生成头文件声明初始化函数：{', '.join(sorted(header_init_names))}。"))
+        if called_names:
+            missing = called_names - header_init_names
+            if missing:
+                messages.append(Message("error", f"应用代码调用了生成头文件中不存在的初始化函数：{', '.join(sorted(missing))}。"))
+            else:
+                messages.append(Message("ok", "应用代码调用的 SYSCFG_DL_init 大小写与生成头文件一致。"))
+        else:
+            messages.append(Message("warning", "应用源码中没有发现 SYSCFG_DL_init/SYSCFG_DL_Init 调用。"))
+    else:
+        if called_names:
+            messages.append(Message("warning", f"源码调用了 {', '.join(sorted(called_names))}，但当前没有生成头文件可确认大小写。"))
+        else:
+            messages.append(Message("warning", "没有生成头文件，也没有在源码中发现 SysConfig 初始化函数调用。"))
+
+    details["validation_hints"] = find_validation_hints(root)
+    return messages, details
+
+
+def print_text(root: Path, messages: list[Message], details: dict[str, object]) -> None:
+    print(f"MSPM0 SysConfig static check: {root}")
+    for msg in messages:
+        path = f" [{msg.path}]" if msg.path else ""
+        print(f"{msg.level.upper():7} {msg.text}{path}")
+
+    hints = details.get("validation_hints", {})
+    if isinstance(hints, dict) and hints:
+        print()
+        print("Suggested CLI validation chain:")
+        for key in ("sysconfig_cli", "gmake", "list_debug_cores", "flash"):
+            if key in hints:
+                print(f"- {key}: {hints[key]}")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Check an MSPM0 CCS SysConfig project.")
+    parser.add_argument("project", nargs="?", default=".", help="Path to a CCS project directory.")
+    parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    args = parser.parse_args()
+
+    root = Path(args.project).resolve()
+    messages, details = check_project(root)
+    has_error = any(msg.level == "error" for msg in messages)
+
+    if args.json:
+        print(json.dumps({"project": str(root), "messages": [asdict(m) for m in messages], "details": details}, ensure_ascii=False, indent=2))
+    else:
+        print_text(root, messages, details)
+
+    return 1 if has_error else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
