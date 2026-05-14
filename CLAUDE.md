@@ -1,31 +1,19 @@
-# Claude Code Repository Notes
+@AGENTS.md
 
-This repository contains an installable skill for MSPM0 CCS / CCS Theia projects.
+# Claude Code Notes
 
-Use this file only when developing this repository. The actual skill to install is:
+`AGENTS.md` is the canonical source for developing this repository.
+
+Claude Code users should install only:
 
 ```text
 skills/mspm0-ccs/
 ```
 
-For Claude Code users, copy that directory to:
+Typical install path:
 
 ```text
 ~/.claude/skills/mspm0-ccs/
 ```
 
-## Editing Rules
-
-- Keep `skills/mspm0-ccs/SKILL.md` concise.
-- Keep detailed docs in `skills/mspm0-ccs/references/`.
-- Keep scripts in `skills/mspm0-ccs/scripts/`.
-- Keep snippets in `skills/mspm0-ccs/assets/snippets/`.
-- Keep examples in `skills/mspm0-ccs/examples/`.
-- Do not treat root `AGENTS.md` or root `CLAUDE.md` as installable MSPM0 project rules.
-
-## Test Commands
-
-```text
-python -m py_compile skills/mspm0-ccs/scripts/check_syscfg.py skills/mspm0-ccs/scripts/serial_console.py
-python skills/mspm0-ccs/scripts/check_syscfg.py .
-```
+Keep this file as a thin compatibility entrypoint. Put shared repository rules in `AGENTS.md`, and put actual MSPM0 skill behavior in `skills/mspm0-ccs/SKILL.md`.

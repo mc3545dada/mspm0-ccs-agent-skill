@@ -10,15 +10,18 @@ skills/mspm0-ccs/
 
 Root-level `AGENTS.md` and `CLAUDE.md` are for agents developing this repository. They are not the user-facing installation entrypoint.
 
+This file is the canonical source for repository-development agent rules. Claude Code should load this file through `CLAUDE.md`.
+
 ## Repository Rules
 
 - Keep the installable skill self-contained under `skills/mspm0-ccs/`.
 - The skill entrypoint is `skills/mspm0-ccs/SKILL.md`.
 - Put long reference docs in `skills/mspm0-ccs/references/`.
 - Put executable helper scripts in `skills/mspm0-ccs/scripts/`.
-- Put reusable snippets and copyable assets in `skills/mspm0-ccs/assets/`.
-- Put example source patterns in `skills/mspm0-ccs/examples/`.
+- Put reusable snippets in `skills/mspm0-ccs/assets/snippets/`.
+- Put full example source patterns in `skills/mspm0-ccs/examples/`.
 - Do not reintroduce root-level `docs/`, `tools/`, `snippets/`, or `examples/` as the primary structure.
+- Do not reintroduce root-level `SKILL.md`; the installable skill entrypoint is inside `skills/mspm0-ccs/`.
 
 ## Validation
 
