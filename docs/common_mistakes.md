@@ -118,3 +118,9 @@ If `dslite -N` cannot list the core or hangs, do not assume flashing will work. 
 A project that has never been built by CCS may not have `Debug/makefile`, `Debug/subdir_rules.mk`, or a `.out` file. SysConfig CLI can still validate `.syscfg`, but `gmake` and flashing need the generated build structure and output file.
 
 A project that has been built can still fail to flash if `targetConfigs/*.ccxml` points to XDS110 while the real probe is J-Link, or vice versa.
+
+## Mistake 13: Trusting Load-And-Run After Clock-Tree Changes
+
+Manual flash or plain DSLite load-and-run may not behave like pressing the board reset button. A verified 80 MHz PB22 LED test blinked at about 2.5 seconds after plain flash, which matches 80,000,000 delay cycles at roughly 32 MHz. Pressing reset, or flashing with DSLite `-r 2 -u`, made the board blink at about one second.
+
+For automated flashing, use System Reset after programming. For manual flashing, press reset after programming when validating clock-tree changes.

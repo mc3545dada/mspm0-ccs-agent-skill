@@ -15,6 +15,7 @@
 - 使用 TI DriverLib 和生成宏
 - 理解 CCS / CCS Theia 工程结构
 - 固化已经实机验证过的命令行流程
+- 记录时钟树和烧录复位相关经验
 
 ## 已验证环境
 
@@ -28,6 +29,7 @@
 - 烧录器：J-Link
 - 烧录工具：UniFlash / DSLite
 - 验证外设：PB22 板载 LED，一秒闪烁
+- 已验证时钟：80MHz CPUCLK，MFCLK 4MHz
 
 其他开发板、芯片封装、SDK/CCS 版本、调试器或烧录方式可能也能使用本项目规则，但尚未百分百确认。迁移到其他组合时，应先运行静态检查和最小外设验证。
 
@@ -96,6 +98,23 @@ python tools\check_syscfg.py C:\Users\3545\workspace_ccstheia\26testproject1
 
 当前实测结论：首次编译和烧录器配置是两个独立条件。首次编译决定命令行构建文件和 `.out` 是否存在；烧录器配置决定 DSLite 是否能连接真实硬件。
 
+## 时钟树和烧录复位
+
+立创天猛星 MSPM0G3507 已验证过一组 80MHz CPUCLK 配置：HFXT 40MHz、SYSPLL、CPUCLK 80MHz、MFCLK 4MHz。相关规则见 `docs/clock_tree_rules.md`，片段见 `snippets/clock_80mhz_mfclk.syscfg.md`。
+
+`delay_cycles()` 和 CPU 主频相关。粗略闪灯测试中：
+
+- 32MHz：`delay_cycles(32000000)` 约 1 秒
+- 80MHz：`delay_cycles(80000000)` 约 1 秒
+
+实测发现：普通手动烧录后第一次运行可能仍表现得像 32MHz，`delay_cycles(80000000)` 会变成约 2.5 秒。按一次开发板 reset 后恢复为 1 秒。自动烧录时建议使用 DSLite System Reset：
+
+```powershell
+dslite.bat -c path\to\MSPM0G3507.ccxml -e -r 2 -u path\to\project.out
+```
+
+手动烧录时如果遇到第一次运行频率不对，烧录后按一次 reset。
+
 ## 核心规则
 
 - `.syscfg` 是引脚、外设、时钟和生成代码的源配置文件。
@@ -121,9 +140,11 @@ docs/
   validated_workflow.md
   cli_validation.md
   reference_projects.md
+  clock_tree_rules.md
 tools/
   check_syscfg.py
 snippets/
+  clock_80mhz_mfclk.syscfg.md
   gpio_output_led.syscfg.md
 examples/
   empty_project/

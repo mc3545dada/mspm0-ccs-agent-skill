@@ -18,6 +18,7 @@ Follow these rules before editing code.
 10. Do not assume a pin is valid only because it exists on the chip package. Verify pinmux through SysConfig or generated output.
 11. Follow the existing project naming style for modules, pins, macros, and interrupt handlers.
 12. Ask before migrating device, package, board, SDK version, compiler, or CCS version.
+13. For CPUCLK, SYSPLL, HFXT, MFCLK, UART clock, and `delay_cycles()` changes, read `docs/clock_tree_rules.md` when available.
 
 ## Recommended Workflow
 
@@ -80,3 +81,5 @@ After changing `.syscfg`, look for a CCS-generated SysConfig command in a build 
 ```
 
 If CLI validation is not available, ask the user to rebuild in CCS and paste any SysConfig or compiler errors.
+
+For automated DSLite flashing, prefer `-r 2 -u` so the target receives a System Reset after programming. For manual flashing, press the board reset button after programming if the first run appears to use the wrong clock speed.

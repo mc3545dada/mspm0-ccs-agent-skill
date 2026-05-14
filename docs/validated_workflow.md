@@ -23,7 +23,7 @@ edit empty.syscfg
 -> run SysConfig
 -> generate ti_msp_dl_config.c / ti_msp_dl_config.h
 -> build with CCS generated makefile
--> flash with DSLite through J-Link
+-> flash with DSLite through J-Link, using System Reset for automatic runs
 -> board LED blinks
 ```
 
@@ -95,6 +95,18 @@ int main(void)
 
 Use the generated init function spelling from the local project. In this validated project, it is `SYSCFG_DL_init()`.
 
+## 80 MHz Clock Tree Follow-Up
+
+A later validation configured the Tianmengxing MSPM0G3507 for 80 MHz CPUCLK with HFXT / SYSPLL and enabled MFCLK for upcoming UART work. The PB22 LED test used:
+
+```c
+delay_cycles(80000000);
+```
+
+After a proper reset, the LED blinked at about one second. Without a system reset after flashing, the first run could blink at about 2.5 seconds, matching 80,000,000 cycles at roughly 32 MHz. Pressing the board reset button, or flashing with DSLite `-r 2 -u`, made the first run use the expected 80 MHz timing.
+
+See `docs/clock_tree_rules.md` for the validated clock-tree pattern.
+
 ## Commands Used
 
 SysConfig CLI validation:
@@ -123,12 +135,13 @@ C:\ti\uniflash_9.2.0\dslite.bat `
   -N
 ```
 
-Flash and run:
+Flash, issue System Reset, and run:
 
 ```powershell
 C:\ti\uniflash_9.2.0\dslite.bat `
   -c C:\Users\3545\workspace_ccstheia\26testproject1\targetConfigs\MSPM0G3507.ccxml `
   -e `
+  -r 2 `
   -u C:\Users\3545\workspace_ccstheia\26testproject1\Debug\26testproject1.out
 ```
 
@@ -137,6 +150,8 @@ Observed DSLite success output:
 ```text
 Loading Program: ...\Debug\26testproject1.out
 Setting PC to entry point.
+Resetting...
+System Reset is issued.
 Running...
 Success
 ```
@@ -148,6 +163,8 @@ Success
 - Read `ti_msp_dl_config.h` after generation instead of guessing macro names.
 - Use generated makefiles when CCS server build commands are unavailable or version-dependent.
 - List debug cores before flashing.
+- Use DSLite System Reset after programming (`-r 2 -u`) for automated flashing, especially after clock-tree changes.
+- For manual flashing, press the board reset button after programming if the first run appears to use the wrong clock speed.
 - Treat hardware observation as a separate validation layer after CLI success.
 
 ## Impact On This Project
@@ -157,4 +174,3 @@ This validation supports the core rules in this repository:
 - `.syscfg` is the correct source of truth for hardware configuration.
 - Generated `ti_msp_dl_config.*` files should be inspected, not hand-edited.
 - CLI-based SysConfig, build, and flash workflows are practical for MSPM0 agent work.
-

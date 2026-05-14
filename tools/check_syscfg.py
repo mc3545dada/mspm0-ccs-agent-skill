@@ -161,7 +161,7 @@ def find_validation_hints(root: Path) -> dict[str, str]:
     if ccxmls:
         hints["list_debug_cores"] = f'dslite -c "{ccxmls[0]}" -N'
     if ccxmls and outs:
-        hints["flash"] = f'dslite -c "{ccxmls[0]}" -e -u "{outs[0]}"'
+        hints["flash"] = f'dslite -c "{ccxmls[0]}" -e -r 2 -u "{outs[0]}"'
     return hints
 
 

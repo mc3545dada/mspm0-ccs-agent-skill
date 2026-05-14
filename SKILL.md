@@ -34,6 +34,7 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 - Use `docs/common_mistakes.md` before finalizing changes.
 - Use `docs/validated_workflow.md` for the verified Tianmengxing MSPM0G3507 PB22 LED workflow.
 - Use `docs/cli_validation.md` for the SysConfig CLI -> gmake -> DSLite/J-Link command chain.
+- Use `docs/clock_tree_rules.md` before changing CPUCLK, SYSPLL, HFXT, MFCLK, UART clocks, or delay-cycle assumptions.
 
 ## Tools
 
@@ -42,3 +43,5 @@ Run `python tools/check_syscfg.py <project-dir>` when this repository is availab
 ## Expected Validation
 
 After modifying `.syscfg`, run the generated SysConfig CLI command if available, or rebuild the CCS project. If no local toolchain is available, clearly report that validation is pending and tell the user which command or IDE build action to run.
+
+For automated DSLite flashing, prefer a system reset after programming: `-r 2 -u`. Manual flashing may require pressing the board reset button after programming, especially after clock-tree changes.
