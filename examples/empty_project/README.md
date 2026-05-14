@@ -4,6 +4,12 @@ Minimal reference captured from a newly created MSPM0G3507 CCS / CCS Theia empty
 
 This is useful for agents because a fresh project may not yet have generated `Debug/ti_msp_dl_config.c` or `Debug/ti_msp_dl_config.h`. In that state, the agent can still inspect `empty.syscfg` and application source, but it cannot confirm generated macro names until SysConfig or CCS build runs.
 
+## Clock Note
+
+This is a fresh-project baseline and should be treated as the default 32 MHz-style configuration. It does not include the later validated 80 MHz HFXT / SYSPLL clock-tree setup.
+
+In real Tianmengxing projects, 80 MHz is common. Use `docs/clock_tree_rules.md` and `examples/uart_blocking_tx/` when you need the verified 80 MHz pattern.
+
 ## Files
 
 - `empty.syscfg`: initial SYSCTL + Board configuration

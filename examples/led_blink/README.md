@@ -4,6 +4,12 @@ Minimal reference for blinking the onboard LED on the LCKFB Tianmengxing MSPM0G3
 
 This example is based on the validated workflow in `docs/validated_workflow.md`. It is not a complete CCS import project. It is an agent-readable reference showing the `.syscfg` and C patterns that were verified on real hardware.
 
+## Clock Note
+
+This LED-only reference is the original 32 MHz baseline. Its `main.c` uses `delay_cycles(32000000)` for a rough one-second blink.
+
+Later Tianmengxing work often uses 80 MHz CPUCLK. For 80 MHz examples, use `delay_cycles(80000000)` for the same rough one-second smoke test and see `docs/clock_tree_rules.md`.
+
 ## Files
 
 - `example.syscfg`: PB22 GPIO output configuration pattern
@@ -28,4 +34,3 @@ SYSCFG_DL_init()
 ```
 
 Real projects may generate different names if `$name` or pin names are changed.
-

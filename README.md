@@ -161,11 +161,14 @@ snippets/
 examples/
   empty_project/
   led_blink/
+  uart_blocking_tx/
 ```
 
 `examples/empty_project/` 记录未编译空工程的最小基线。
 
-`examples/led_blink/` 记录已经在立创天猛星 MSPM0G3507 + PB22 上实机验证过的 LED 闪烁模式。
+`examples/led_blink/` 记录已经在立创天猛星 MSPM0G3507 + PB22 上实机验证过的 32MHz LED 闪烁模式。
+
+`examples/uart_blocking_tx/` 记录 80MHz CPUCLK + UART0 阻塞发送字符串的实机验证模式。
 
 ## 后续计划
 
