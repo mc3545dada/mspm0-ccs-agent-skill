@@ -32,6 +32,7 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 7. Follow the existing project naming style for modules, pins, macros, and interrupt handlers.
 8. Ask before changing device, package, board, SDK, compiler, CCS version, or debug probe.
 9. Do not freehand new SysConfig fields. If unsure, search the local MSPM0 SDK examples and module metadata first.
+10. Preserve unrelated user code, comments, license headers, and `.syscfg` settings. If a requested feature requires removing or rewriting existing project logic, call that out before making the change when possible.
 
 ## Safe Edit Scope
 
@@ -41,6 +42,8 @@ Usually safe to edit:
 - `.syscfg`.
 - Project documentation.
 - User-owned board support files.
+
+Keep edits focused on the requested behavior. If a file already has a TI or user copyright header, leave it in place unless the user explicitly asks for cleanup. If a file has no header, do not add one just for style.
 
 Avoid hand-editing generated or build output files:
 

@@ -14,7 +14,7 @@ from typing import Iterable
 
 GENERATED_NAMES = {"ti_msp_dl_config.c", "ti_msp_dl_config.h"}
 BUILD_DIRS = {"Debug", "Release"}
-SKIP_DIRS = {".git", ".svn", ".hg", "__pycache__"}
+SKIP_DIRS = {".git", ".svn", ".hg", ".agents", ".claude", ".codex", "__pycache__"}
 
 
 @dataclass
@@ -128,6 +128,23 @@ def parse_assigned_pins(text: str) -> list[dict[str, str]]:
     return pins
 
 
+def parse_hfxt_status(text: str) -> dict[str, bool]:
+    clock_tree_match = re.search(r"(?:const|let|var)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*system\.clockTree\[\s*[\"']HFXT[\"']\s*\]", text)
+    clock_tree_enabled = False
+    if clock_tree_match:
+        variable = re.escape(clock_tree_match.group(1))
+        clock_tree_enabled = bool(re.search(rf"\b{variable}\.enable\s*=\s*true", text))
+    sysctl_uses_hfxt = bool(re.search(r"SYSCTL\.HFCLKSource\s*=\s*[\"']HFXT[\"']", text))
+    enabled = clock_tree_enabled or sysctl_uses_hfxt
+    has_in_pin_lock = bool(re.search(r"(hfxInPin|GPIO_HFXIN|HFXIN).*\$(assign|suggestSolution)", text))
+    has_out_pin_lock = bool(re.search(r"(hfxOutPin|GPIO_HFXOUT|HFXOUT).*\$(assign|suggestSolution)", text))
+    return {
+        "enabled": enabled,
+        "has_hfxin_lock": has_in_pin_lock,
+        "has_hfxout_lock": has_out_pin_lock,
+    }
+
+
 def parse_header_init_names(headers: Iterable[Path]) -> set[str]:
     names: set[str] = set()
     for header in headers:
@@ -213,6 +230,14 @@ def check_project(root: Path) -> tuple[list[Message], dict[str, object]]:
             messages.append(Message("warning", "导入了 GPIO 模块，但没有发现 assignedPin；请确认是否依赖自动求解。", rel(syscfg, root)))
         else:
             messages.append(Message("info", "未发现 assignedPin；如果是空工程，这是正常现象。", rel(syscfg, root)))
+
+        hfxt_status = parse_hfxt_status(text)
+        details[f"hfxt:{rel(syscfg, root)}"] = hfxt_status
+        if hfxt_status["enabled"]:
+            if hfxt_status["has_hfxin_lock"] and hfxt_status["has_hfxout_lock"]:
+                messages.append(Message("ok", "HFXT 已启用，并发现 HFXIN/HFXOUT pinmux 锁定线索。", rel(syscfg, root)))
+            else:
+                messages.append(Message("warning", "HFXT 已启用，但未发现 HFXIN/HFXOUT pinmux 锁定线索；GUI 可能显示 Solution may have changed warning，请确认 PA5/PA6 和生成头文件。", rel(syscfg, root)))
 
     generated = find_generated_files(root)
     details["generated_files"] = [rel(p, root) for p in generated]

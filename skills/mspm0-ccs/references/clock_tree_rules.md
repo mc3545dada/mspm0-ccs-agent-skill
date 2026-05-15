@@ -61,6 +61,20 @@ pinFunction4.peripheral.hfxInPin.$suggestSolution  = "PA5";
 pinFunction4.peripheral.hfxOutPin.$suggestSolution = "PA6";
 ```
 
+This exact HFXT pin suggestion form is not valid in every SysConfig project shape. In a fresh CCS board-based empty project, `pinFunction4.peripheral` or `SYSCTL.peripheral` may be undefined even though the clock tree itself is valid. If setting HFXT pin suggestions throws a `TypeError`, remove the invalid suggestion lines, run SysConfig again, and report any remaining warning instead of claiming a clean validation.
+
+If SysConfig CLI succeeds but prints a warning like:
+
+```text
+warning: HFXT(/ti/clockTree/pinFunction.js) peripheral.$assign: Solution may have changed
+warning: HFXT(/ti/clockTree/pinFunction.js) peripheral.hfxInPin.$assign: Solution may have changed
+warning: HFXT(/ti/clockTree/pinFunction.js) peripheral.hfxOutPin.$assign: Solution may have changed
+```
+
+then the generated code can still be usable, but the HFXT pinmux is not fully locked from the script. Open the GUI or inspect generated `ti_msp_dl_config.h` to confirm `GPIO_HFXIN_*`, `GPIO_HFXOUT_*`, and `CPUCLK_FREQ`. Treat this as "generated with clock-tree pinmux warnings", not as a fully clean SysConfig result.
+
+Some TI SDK examples use `SYSCTL.peripheral.hfxInPin.$assign = "PA5"` and `SYSCTL.peripheral.hfxOutPin.$assign = "PA6"`, but do not copy those lines blindly into a project where `SYSCTL.peripheral` is undefined. Prefer the user's existing working `.syscfg` style and validate with SysConfig CLI.
+
 After rebuilding, inspect `Debug/ti_msp_dl_config.h` and `Debug/ti_msp_dl_config.c` for generated output similar to:
 
 ```c

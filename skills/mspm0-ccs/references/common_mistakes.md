@@ -124,3 +124,19 @@ A project that has been built can still fail to flash if `targetConfigs/*.ccxml`
 Manual flash or plain DSLite load-and-run may not behave like pressing the board reset button. A verified 80 MHz PB22 LED test blinked at about 2.5 seconds after plain flash, which matches 80,000,000 delay cycles at roughly 32 MHz. Pressing reset, or flashing with DSLite `-r 2 -u`, made the board blink at about one second.
 
 For automated flashing, use System Reset after programming. For manual flashing, press reset after programming when validating clock-tree changes.
+
+## Mistake 14: Reporting SysConfig Warnings As Clean Success
+
+SysConfig CLI can generate files successfully while still reporting warnings. A real 80 MHz HFXT test produced:
+
+```text
+HFXT peripheral.$assign: Solution may have changed
+HFXT peripheral.hfxInPin.$assign: Solution may have changed
+HFXT peripheral.hfxOutPin.$assign: Solution may have changed
+```
+
+Do not hide this from the user. Say that generation, build, and flash succeeded, but SysConfig still has HFXT pinmux warnings. Confirm generated `CPUCLK_FREQ`, `GPIO_HFXIN_*`, and `GPIO_HFXOUT_*` before treating the clock tree as usable.
+
+## Mistake 15: Rewriting Unrelated User Code
+
+Do not replace a user's project style just to make the file look cleaner. Keep existing copyright headers, comments, naming, and unrelated logic unless the requested feature requires changing them. If a large rewrite is necessary, explain why before proceeding when possible.
