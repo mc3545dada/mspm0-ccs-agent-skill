@@ -57,6 +57,19 @@ Debug/subdir_rules.mk
 
 The rule normally invokes `sysconfig_cli` with the project `.syscfg`, SDK product metadata, and compiler target. This is useful for validation because it shows the exact SysConfig command CCS expects.
 
+## Generated Makefile Gotcha
+
+A verified PWM test project generated a `Debug/makefile` that linked both:
+
+```text
+../device_linker.cmd
+-l"./device_linker.cmd"
+```
+
+SysConfig generated `Debug/device_linker.cmd`, but `../device_linker.cmd` did not exist. Copying `Debug/device_linker.cmd` into the project root allowed the dependency to resolve, but then the linker saw the memory map twice and failed with duplicate `FLASH` / `SRAM` ranges.
+
+If this appears, do not treat it as a `.syscfg` or application-code failure. It is a CCS generated build-file state issue. Prefer regenerating or rebuilding the project through CCS. For one-off CLI validation, use the same object files and libraries but avoid the duplicate `../device_linker.cmd` input; keep the generated linker file path used by `-l"./device_linker.cmd"`.
+
 ## Project Metadata Rules
 
 Do not casually edit:

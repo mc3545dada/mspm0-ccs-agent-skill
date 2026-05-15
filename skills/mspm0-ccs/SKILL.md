@@ -98,6 +98,7 @@ For manual flashing, press the board reset button after programming if the first
 - `references/cli_validation.md`: SysConfig CLI -> gmake -> DSLite/J-Link command chain.
 - `references/clock_tree_rules.md`: CPUCLK, SYSPLL, HFXT, MFCLK, UART clocks, and `delay_cycles()` assumptions.
 - `references/uart_blocking_tx.md`: verified UART0 blocking transmit smoke test before DMA or variable-length receive.
+- `references/pwm_breath_led.md`: verified PB22 PWM breathing LED baseline, failed duty-cycle attempts, and CCS linker-file build gotcha.
 - `references/syscfg_schema_sources.md`: how to use local MSPM0 SDK examples and `.meta/*.syscfg.js` instead of guessing `.syscfg` fields.
 
 ## Tools

@@ -93,6 +93,7 @@ skills/mspm0-ccs/
 │  ├─ reference_projects.md
 │  ├─ clock_tree_rules.md
 │  ├─ uart_blocking_tx.md
+│  ├─ pwm_breath_led.md
 │  └─ syscfg_schema_sources.md
 ├─ scripts/
 │  ├─ check_syscfg.py
@@ -107,7 +108,8 @@ skills/mspm0-ccs/
 └─ examples/
    ├─ empty_project/
    ├─ led_blink/
-   └─ uart_blocking_tx/
+   ├─ uart_blocking_tx/
+   └─ pwm_breath_led/
 ```
 
 ## 已验证环境
@@ -181,6 +183,7 @@ python skills\mspm0-ccs\scripts\index_syscfg_examples.py C:\ti\mspm0_sdk_2_10_00
 - `examples/empty_project/`：未编译空工程基线，默认 32MHz 风格。
 - `examples/led_blink/`：PB22 LED 32MHz 闪灯基线。
 - `examples/uart_blocking_tx/`：80MHz CPUCLK + UART0 阻塞发送字符串基线。
+- `examples/pwm_breath_led/`：80MHz CPUCLK + PB22 / TIMG8_CCP1 PWM 呼吸灯基线。
 
 ## 后续计划
 

@@ -128,6 +128,16 @@ def parse_assigned_pins(text: str) -> list[dict[str, str]]:
     return pins
 
 
+def parse_peripheral_pin_assigns(text: str) -> list[dict[str, str]]:
+    pins: list[dict[str, str]] = []
+    for match in re.finditer(
+        r"(?P<expr>[A-Za-z0-9_.$\[\]]+(?:Pin|pin))\.\$assign\s*=\s*\"(?P<pin>P[A-Z]\d+)\"",
+        text,
+    ):
+        pins.append({"expr": match.group("expr"), "pin": match.group("pin")})
+    return pins
+
+
 def parse_hfxt_status(text: str) -> dict[str, bool]:
     clock_tree_match = re.search(r"(?:const|let|var)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*system\.clockTree\[\s*[\"']HFXT[\"']\s*\]", text)
     clock_tree_enabled = False
@@ -182,6 +192,14 @@ def find_validation_hints(root: Path) -> dict[str, str]:
     return hints
 
 
+def has_duplicate_linker_cmd_inputs(root: Path) -> bool:
+    makefile = root / "Debug" / "makefile"
+    if not makefile.exists():
+        return False
+    text = read_text(makefile)
+    return "../device_linker.cmd" in text and './device_linker.cmd' in text
+
+
 def describe_target_config(path: Path) -> str:
     text = read_text(path)
     if "segger_j-link_connection.xml" in text or "SEGGER J-Link" in text:
@@ -222,10 +240,16 @@ def check_project(root: Path) -> tuple[list[Message], dict[str, object]]:
 
         pins = parse_assigned_pins(text)
         details[f"assigned_pins:{rel(syscfg, root)}"] = pins
+        peripheral_pin_assigns = parse_peripheral_pin_assigns(text)
+        details[f"peripheral_pin_assigns:{rel(syscfg, root)}"] = peripheral_pin_assigns
         if pins:
             for pin in pins:
                 suffix = f"，建议解为 {pin['suggestSolution']}" if pin["suggestSolution"] else ""
                 messages.append(Message("ok", f"发现 assignedPin={pin['assignedPin']}{suffix}。", rel(syscfg, root)))
+        elif peripheral_pin_assigns:
+            formatted = ", ".join(f"{pin['expr']}={pin['pin']}" for pin in peripheral_pin_assigns[:5])
+            more = " ..." if len(peripheral_pin_assigns) > 5 else ""
+            messages.append(Message("ok", f"发现外设 pin $assign：{formatted}{more}。", rel(syscfg, root)))
         elif "/ti/driverlib/GPIO" in text:
             messages.append(Message("warning", "导入了 GPIO 模块，但没有发现 assignedPin；请确认是否依赖自动求解。", rel(syscfg, root)))
         else:
@@ -274,6 +298,8 @@ def check_project(root: Path) -> tuple[list[Message], dict[str, object]]:
     subdir_rules = root / "Debug" / "subdir_rules.mk"
     if makefile.exists() and subdir_rules.exists():
         messages.append(Message("ok", "Debug 构建文件已存在，可以尝试使用 gmake -C Debug clean all。", "Debug"))
+        if has_duplicate_linker_cmd_inputs(root):
+            messages.append(Message("warning", "Debug/makefile 同时引用 ../device_linker.cmd 和 ./device_linker.cmd；这可能导致 gmake clean all 失败或重复链接 linker cmd。优先让 CCS 重新生成构建文件，临时 CLI 验证时避免重复输入。", "Debug/makefile"))
     else:
         messages.append(Message("warning", "Debug 构建文件不完整；新建工程通常需要先在 CCS/CCS Theia 编译一次，或使用 CCS 命令行构建生成 makefile。", "Debug"))
 
