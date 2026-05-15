@@ -92,15 +92,18 @@ skills/mspm0-ccs/
 │  ├─ cli_validation.md
 │  ├─ reference_projects.md
 │  ├─ clock_tree_rules.md
-│  └─ uart_blocking_tx.md
+│  ├─ uart_blocking_tx.md
+│  └─ syscfg_schema_sources.md
 ├─ scripts/
 │  ├─ check_syscfg.py
-│  └─ serial_console.py
+│  ├─ serial_console.py
+│  └─ index_syscfg_examples.py
 ├─ assets/
 │  └─ snippets/
 │     ├─ clock_80mhz_mfclk.syscfg.md
 │     ├─ gpio_output_led.syscfg.md
-│     └─ uart0_blocking_tx.syscfg.md
+│     ├─ uart0_blocking_tx.syscfg.md
+│     └─ mspm0g3507_lqfp64_empty_scaffold.syscfg.md
 └─ examples/
    ├─ empty_project/
    ├─ led_blink/
@@ -152,6 +155,12 @@ python skills\mspm0-ccs\scripts\check_syscfg.py C:\Users\3545\workspace_ccstheia
 ```powershell
 python skills\mspm0-ccs\scripts\serial_console.py --list
 python skills\mspm0-ccs\scripts\serial_console.py -p COM6 -b 115200 --timestamp --duration 10
+```
+
+索引本地 TI MSPM0 SDK 的官方 SysConfig 例程和模块 metadata：
+
+```powershell
+python skills\mspm0-ccs\scripts\index_syscfg_examples.py C:\ti\mspm0_sdk_2_10_00_04 --board LP_MSPM0G3507 --module UART
 ```
 
 如果 VOFA+ 或其他串口助手已经打开同一个 COM 口，Python 会无法打开该串口。测试 Python 工具前需要先关闭占用串口的软件。

@@ -15,10 +15,11 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 2. Read the `.syscfg` metadata: device, package, SDK product, and SysConfig tool version.
 3. Inspect generated `ti_msp_dl_config.h` for generated names, macros, IRQ names, and init function spelling.
 4. Inspect existing module instances, such as GPIO, UART, PWM, I2C, ADC, TIMER, SYSCTL, DMA, and interrupts.
-5. Read the relevant docs under `references/` before changing hardware configuration.
-6. Modify the smallest relevant `.syscfg` section and follow the local naming style.
-7. Update application code to use generated DriverLib macros.
-8. Rebuild or run SysConfig CLI after `.syscfg` changes.
+5. If the needed SysConfig field or enum is unclear, read `references/syscfg_schema_sources.md` and inspect local SDK examples or `.meta/*.syscfg.js` before editing.
+6. Read the relevant docs under `references/` before changing hardware configuration.
+7. Modify the smallest relevant `.syscfg` section and follow the local naming style.
+8. Update application code to use generated DriverLib macros.
+9. Rebuild or run SysConfig CLI after `.syscfg` changes.
 
 ## Core Rules
 
@@ -30,6 +31,7 @@ This skill is for Claude Code, OpenCode, OpenClaw, Continue, Cursor, Codex, and 
 6. Do not assume a pin is valid only because it exists on the package. Verify pinmux through SysConfig or generated output.
 7. Follow the existing project naming style for modules, pins, macros, and interrupt handlers.
 8. Ask before changing device, package, board, SDK, compiler, CCS version, or debug probe.
+9. Do not freehand new SysConfig fields. If unsure, search the local MSPM0 SDK examples and module metadata first.
 
 ## Safe Edit Scope
 
@@ -81,6 +83,7 @@ For manual flashing, press the board reset button after programming if the first
 - Do not guess pinmux validity from a package pin alone.
 - Do not guess whether the generated init function is `SYSCFG_DL_init()` or `SYSCFG_DL_Init()`.
 - Do not migrate device, package, board, SDK, compiler, CCS version, or debug probe without asking.
+- Do not invent `.syscfg` field names, enum values, `@cliArgs`, `@v2CliArgs`, device, package, product, or version metadata.
 
 ## Reference Selection
 
@@ -92,9 +95,12 @@ For manual flashing, press the board reset button after programming if the first
 - `references/cli_validation.md`: SysConfig CLI -> gmake -> DSLite/J-Link command chain.
 - `references/clock_tree_rules.md`: CPUCLK, SYSPLL, HFXT, MFCLK, UART clocks, and `delay_cycles()` assumptions.
 - `references/uart_blocking_tx.md`: verified UART0 blocking transmit smoke test before DMA or variable-length receive.
+- `references/syscfg_schema_sources.md`: how to use local MSPM0 SDK examples and `.meta/*.syscfg.js` instead of guessing `.syscfg` fields.
 
 ## Tools
 
 Run `python scripts/check_syscfg.py <project-dir>` when this skill is available and you need a quick static check of a CCS project. The tool checks `.syscfg` metadata, generated SysConfig files, assigned pins, init-function spelling, and prints validation command hints when it can infer them from the project.
 
 Run `python scripts/serial_console.py --list` to list PC serial ports. For the verified CH340 setup, use `python scripts/serial_console.py -p COM6 -b 115200 --timestamp --duration 10` after closing other serial tools such as VOFA+.
+
+Run `python scripts/index_syscfg_examples.py <mspm0-sdk-root> --board LP_MSPM0G3507 --module UART` to index local TI SDK `.syscfg` examples and `source/ti/driverlib/.meta/*.syscfg.js` module metadata before authoring unfamiliar SysConfig fields.

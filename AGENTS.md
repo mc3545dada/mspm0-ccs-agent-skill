@@ -28,7 +28,7 @@ This file is the canonical source for repository-development agent rules. Claude
 After changing scripts, run:
 
 ```text
-python -m py_compile skills/mspm0-ccs/scripts/check_syscfg.py skills/mspm0-ccs/scripts/serial_console.py
+python -m py_compile skills/mspm0-ccs/scripts/check_syscfg.py skills/mspm0-ccs/scripts/serial_console.py skills/mspm0-ccs/scripts/index_syscfg_examples.py
 ```
 
 After changing references or examples, run the checker against the repository to catch obvious path or SysConfig issues:
